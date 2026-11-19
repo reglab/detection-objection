@@ -387,16 +387,6 @@ footer b { color: var(--ink); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
-/* ---------- DEV: palette switcher (temporary) ---------- */
-:root[data-pal] { --band: color-mix(in srgb, var(--pointer) 15%, transparent); --band-2: color-mix(in srgb, var(--pointer) 34%, transparent); --track: color-mix(in srgb, var(--ink) 9%, transparent); }
-:root[data-pal="cardinal"] { --bench: #f1efec; --card: #faf9f7; --paper: #fffefc; --ink: #1e1b1b; --ink-2: #5d5756; --rule: #cfc9c4; --pointer: #8c1515; --cool: #175e54; }
-:root[data-pal="cobalt"]   { --bench: #e6e9ee; --card: #f7f8fa; --paper: #fdfdfe; --ink: #161a22; --ink-2: #525a68; --rule: #bfc6d1; --pointer: #2f5fd0; --cool: #c0612b; }
-:root[data-pal="manila"]   { --bench: #ece4d0; --card: #f8f3e6; --paper: #fffcf3; --ink: #22201b; --ink-2: #5e5748; --rule: #cdbf9f; --pointer: #1f6f5c; --cool: #a4532c; }
-:root[data-pal="plum"]     { --bench: #ebe7ea; --card: #f8f6f7; --paper: #fefdfd; --ink: #1d1a1e; --ink-2: #5c5560; --rule: #cbc3ca; --pointer: #7b2d6b; --cool: #2f7a6e; }
-:root[data-pal="night"]    { --bench: #1b1f22; --card: #242a2e; --paper: #f4f3ee; --ink: #e8ebe8; --ink-2: #a3aba6; --rule: #3c4448; --pointer: #f0a03c; --cool: #6cb3d6; color-scheme: dark; }
-:root[data-pal="night"] .flogo img { filter: invert(1); }
-#devpal { position: fixed; right: 12px; top: 60px; z-index: 50; display: flex; align-items: center; gap: 6px; padding: 6px 8px; font: 400 12px/1 var(--f-mono); color: var(--ink); background: var(--card); border: 1px dashed var(--ink-2); box-shadow: 0 6px 16px -10px rgba(0,0,0,.4); }
-#devpal select { font: inherit; color: inherit; background: var(--bench); border: 1px solid var(--rule); padding: 3px 4px; }
 </style>
 
 <header class="top">
@@ -1138,17 +1128,4 @@ footer b { color: var(--ink); }
 })();
 </script>
 
-<div id="devpal" aria-label="Palette (dev)"><label for="devpal-s">Palette</label><select id="devpal-s">
-  <option value="">Sage &amp; ember (current)</option>
-  <option value="cardinal">Cardinal &amp; green</option>
-  <option value="cobalt">Fog &amp; cobalt</option>
-  <option value="manila">Manila &amp; teal</option>
-  <option value="plum">Mauve &amp; plum</option>
-  <option value="night">Night &amp; amber (dark)</option>
-</select></div>
-<script>(()=>{const sel=document.getElementById('devpal-s'),root=document.documentElement;
-const set=v=>{v?root.dataset.pal=v:delete root.dataset.pal;try{localStorage.setItem('devpal',v)}catch(e){}};
-let v='';try{v=localStorage.getItem('devpal')||''}catch(e){}
-if(v&&[...sel.options].some(o=>o.value===v)){sel.value=v;set(v)}else if(root.dataset.pal)sel.value=root.dataset.pal;
-sel.addEventListener('change',()=>set(sel.value));})();</script>
 </body></html>

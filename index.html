@@ -1,0 +1,1154 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Detection Objection</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=2">
+<link rel="icon" href="favicon.ico?v=2" sizes="any">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<meta name="description" content="The first calibrated estimate of AI-assisted drafting in U.S. state trial courts. Stanford RegLab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+</head><body>
+<style>
+/* Layout: a calibration bench with two objects on it, the instrument (dial) and a sheet of pleading paper.
+   Everything else sits unframed on the bench: charts, notes and figures separated by space and thin rules.
+   Orange marks AI share: the needle, the highlighted estimate, known AI use. Nothing else.
+   Light only, by choice: the page reads as an academic document in every viewer theme.
+   Type sizes, nine styles:
+     display 76 · heading 40 · subheading 20 · readout 52 · stat 28   (B612 bold)
+     lede 19 · body 17 · caption 14                                    (Source Serif 4)
+     label 13: B612 for words; B612 Mono on the instrument, for values and on chart axes
+   Tinos is the material of the paper objects only (15; line numbers and footer 12). */
+/* iPhone notch and home-bar safe areas (viewport-fit=cover) */
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden]:not([hidden=until-found i]) { display: none !important; }
+:root {
+  --bench: #e4e7e3;
+  --card: #f6f7f4;
+  --ink: #191b1a;
+  --ink-2: #555b57;
+  --rule: #bcc3bd;
+  --track: rgba(25, 27, 26, .09);
+  --pointer: #cf4b17;
+  --band: rgba(207, 75, 23, .15);
+  --band-2: rgba(207, 75, 23, .34);
+  --cool: #2c6a8a;   /* below-even side of the section scale only */
+  --paper: #fdfdfb;
+  --paper-ink: #111214;
+  --f-inst: "B612", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "B612 Mono", ui-monospace, Menlo, monospace;
+  --f-text: "Source Serif 4", Georgia, serif;
+  --f-paper: "Tinos", "Times New Roman", Times, serif;
+  --t-display: 700 clamp(44px, 6.2vw, 76px)/.98 var(--f-inst);
+  --t-heading: 700 clamp(30px, 3.4vw, 40px)/1.05 var(--f-inst);
+  --t-sub: 700 20px/1.3 var(--f-inst);
+  --t-readout: 700 52px/1 var(--f-inst);
+  --t-stat: 700 28px/1.15 var(--f-inst);
+  --t-lede: 400 19px/1.55 var(--f-text);
+  --t-body: 400 17px/1.6 var(--f-text);
+  --t-cap: 400 14px/1.5 var(--f-text);
+  --t-label: 400 13px/1.4 var(--f-inst);
+  --t-mono: 400 13px/1.4 var(--f-mono);
+  --plh: 28px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--bench); color: var(--ink); font: var(--t-body); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p, ul, ol, figure { margin: 0; padding: 0; }
+a { color: inherit; text-decoration-color: var(--rule); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.num { font-variant-numeric: tabular-nums; }
+.cap { font: var(--t-cap); color: var(--ink-2); max-width: 48em; }
+.cap b { color: var(--ink); font-weight: 600; }
+
+/* Header */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bench); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bench) 92%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; justify-content: space-between; align-items: center; gap: 16px; height: 50px; }
+.brand { font: var(--t-label); font-weight: 700; text-decoration: none; white-space: nowrap; }
+.top nav { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.top nav a { font: var(--t-label); color: var(--ink-2); text-decoration: none; padding: 6px 8px; white-space: nowrap; }
+.top nav a:hover { color: var(--ink); }
+
+/* Hero: the bench, and the instrument on it */
+.bench { border-bottom: 1px solid var(--rule); }
+.hero { padding-block: 56px 64px; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 56px; align-items: start; }
+.intro { position: relative; display: grid; gap: 22px; padding-top: 8px; min-width: 0; }
+.intro-foot { display: grid; gap: 22px; }
+/* Wide screens: authors and links follow the lede directly; spare height falls below them */
+@media (min-width: 961px) {
+  .intro { display: flex; flex-direction: column; gap: 22px; }
+  .intro-foot { margin-top: 10px; padding-top: 28px; border-top: 1px solid var(--rule); }
+}
+/* Scan line: a faint detector pass across the title only, left to right, then a pause. Ink only, never orange. */
+h1 { position: relative; }
+.scan { position: absolute; inset: -8px -16px; overflow: hidden; pointer-events: none; z-index: 1; }
+.scan::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 18%; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(25, 27, 26, .035) 80%, rgba(25, 27, 26, .07) 97%, rgba(25, 27, 26, .2) calc(100% - 1.5px), rgba(25, 27, 26, .2) 100%);
+  animation: scan 12s cubic-bezier(.45, 0, .55, 1) 1.2s infinite; }
+@keyframes scan { 0% { transform: translateX(-100%); } 62% { transform: translateX(560%); } 100% { transform: translateX(560%); } }
+h1 { font: var(--t-display); letter-spacing: -.02em; text-wrap: balance; }
+.q { font: var(--t-lede); text-wrap: pretty; max-width: 28em; }
+.authors { font: var(--t-label); color: var(--ink-2); }
+.authors b { color: var(--ink); font-weight: 400; }
+.ctas { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; font: var(--t-label); font-weight: 700; padding: 10px 16px; border: 1.5px solid var(--ink); border-radius: 2px; text-decoration: none; }
+
+.inst { position: relative; background: var(--card); border: 1.5px solid var(--ink); display: grid; min-width: 0; box-shadow: 0 14px 34px -18px rgba(0,0,0,.35); }
+.inst-title { font: var(--t-sub); color: var(--ink); text-wrap: balance; hyphens: manual; }
+.inst-head { display: flex; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--rule); }
+.dial-wrap { padding: 12px 22px 0; }
+#dial { display: block; width: 100%; height: auto; }
+#dial .needle { transition: transform .45s cubic-bezier(.34, 1.3, .55, 1); transform-origin: 240px 240px; }
+.readout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: end; padding: 0 22px 16px; }
+.readout .big { font: var(--t-readout); font-variant-numeric: tabular-nums; }
+.readout .big.cal { color: var(--pointer); }
+.readout .setting { font: var(--t-mono); color: var(--ink-2); grid-column: 1; height: 4.2em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.readout .bandtxt { font: var(--t-mono); color: var(--ink-2); text-align: right; grid-row: 1 / 3; grid-column: 2; align-self: end; }
+.readout .bandtxt b { display: block; color: var(--ink); font-weight: 400; }
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule); }
+.steps button { font: var(--t-mono); text-align: left; color: var(--ink-2); background: none; border: 0; border-left: 1px solid var(--rule); padding: 10px 12px; cursor: pointer; min-height: 48px; }
+.steps button:first-child { border-left: 0; }
+.steps button b { display: block; font: var(--t-label); font-weight: 700; color: var(--ink); }
+.steps button[aria-current="step"] { background: var(--ink); color: var(--card); }
+.steps button[aria-current="step"] b { color: var(--card); }
+.steps .sn { font-weight: 400; opacity: .5; margin-right: .55em; }
+.panel { border-top: 1px solid var(--rule); padding: 16px 18px 18px; display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 12px; align-items: center; }
+.ptext { display: grid; gap: 12px; min-width: 0; }
+/* The step text sits under the instrument, outside its frame */
+.hero-r { display: grid; min-width: 0; }
+.hero-r > .panel { border-top: 0; padding: 20px 0 0 2px; }
+.pnext { display: grid; place-items: center; width: 40px; height: 64px; font: 300 40px/1 var(--f-inst); color: var(--ink-2); opacity: .4; background: none; border: 0; border-radius: 2px; cursor: pointer; padding: 0 0 4px; transition: opacity .2s; }
+.pnext:hover, .pnext:focus-visible { opacity: 1; }
+
+/* Sections */
+section.band { padding-block: 80px; border-top: 1px solid var(--rule); }
+section.band:first-of-type { border-top: 0; }
+.shead { display: grid; gap: 12px; max-width: 46em; margin-bottom: 40px; }
+h2 { font: var(--t-heading); letter-spacing: -.015em; text-wrap: balance; }
+.shead p { font: var(--t-lede); text-wrap: pretty; }
+.block { margin-top: 64px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.block.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; }
+.block:first-of-type { margin-top: 0; }
+h3 { font: var(--t-sub); }
+.block > p { max-width: 46em; }
+.block > p.lede { font: var(--t-lede); text-wrap: pretty; }
+.fig { display: grid; gap: 10px; border-top: 1px solid var(--ink); padding-top: 12px; min-width: 0; }
+.fig-t { font: var(--t-label); color: var(--ink-2); }
+#hard .fig { border-top: 0; padding-top: 0; } /* no rule above the right-column charts in "Why it's hard" */
+.fig svg { width: 100%; height: auto; display: block; }
+.fig svg text { font-family: var(--f-mono); }
+.clab { cursor: pointer; } .clab:hover { text-decoration: underline; } .clab:focus-visible { outline: none; text-decoration: underline; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+
+/* Line draw, on first view only */
+.tl { stroke-dasharray: 1; animation: draw 1.6s cubic-bezier(.4, 0, .2, 1) both; }
+.tl-end { animation: fadein .3s 1.4s both; }
+.static .tl, .static .tl-end { animation: none; }
+/* PhantomDocket flow: plays once on first view */
+#pdflow.go .sk-gx { transform-box: fill-box; transform-origin: left; animation: skgx .4s ease-out both; }
+#pdflow.go .sk-gy { transform-box: fill-box; transform-origin: top; animation: skgy .4s ease-out both; }
+#pdflow.go .sk-dr { stroke-dasharray: 1; animation: draw .5s ease-out both; }
+#pdflow.go .sk-f { animation: fadein .3s ease-out both; }
+@keyframes skgx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes skgy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+/* One bar style */
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 11em minmax(0, 1fr) 4.6em; gap: 12px; align-items: center; font: var(--t-label); }
+.bar .t { position: relative; height: 8px; background: var(--track); }
+.bar .t i { position: absolute; inset: 0 auto 0 0; width: calc(var(--v) * 1%); background: var(--ink); }
+.bar.em span:first-child { font-weight: 700; }
+.bar.em .t i { background: var(--pointer); } .bar.em b, .bar.em span:first-child { color: var(--pointer); }
+.bar .t.mid::after { content: ""; position: absolute; left: var(--mid, 50%); top: -5px; bottom: -5px; border-left: 1.5px solid var(--ink-2); }
+.bar b { font: var(--t-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.rgv .bar { grid-template-columns: 14em minmax(0, 1fr) 4.6em; }
+.rgv .bar b { white-space: nowrap; }
+.scale-note.rgv { padding-left: calc(14em + 12px); }
+.bar .t i.loss { left: calc(var(--lo) * 1%); background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 5px); }
+.lossb .bar { grid-template-columns: 8.5em minmax(0, 1fr) 7.4em; } .lossb .bar b { white-space: nowrap; }
+.bar b .was { color: var(--ink-2); margin-left: .7em; } /* grey: the value before the striped loss */
+.scale-note { display: flex; justify-content: space-between; font: var(--t-mono); color: var(--ink-2); padding-left: calc(11em + 12px); padding-right: calc(4.6em + 12px); }
+
+/* Case mix mosaic: width = share of a court's complaints in the selected year, orange height = ScoreMix estimate for that type */
+.seg { display: flex; flex-wrap: wrap; }
+.seg button { font: var(--t-mono); color: var(--ink-2); background: none; border: 1px solid var(--rule); margin-left: -1px; padding: 8px 12px; min-height: 40px; cursor: pointer; }
+.seg button:first-child { margin-left: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--card); position: relative; }
+.mz-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px 20px; margin-top: 4px; }
+.mz-foot .seg { margin-left: auto; }
+.mz-foot .mz-read { flex: 1 1 24em; min-height: 2.8em; line-height: 1.4; }
+.mz { display: grid; gap: 14px; }
+.mz-row { display: grid; grid-template-columns: 4em minmax(0, 1fr); gap: 14px; align-items: end; }
+.mz-row > b { font: var(--t-label); font-weight: 700; align-self: end; padding-bottom: 18px; }
+.mz-row > b span { display: block; font: var(--t-mono); font-weight: 400; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.mz-bar { display: flex; align-items: flex-end; }
+/* Year changes interpolate: width (share), orange height (estimate), hatching (reported or not) */
+.mz-seg { --mz-t: .7s cubic-bezier(.4, 0, .2, 1); flex: 0 1 0; min-width: 2px; margin-left: 2px; cursor: default; outline: none; display: flex; flex-direction: column; transition: flex-grow var(--mz-t), margin-left var(--mz-t), min-width var(--mz-t); }
+.mz-seg:first-child { margin-left: 0; }
+.mz-seg.z { min-width: 0; margin-left: 0; pointer-events: none; }
+.mz-seg .bx { position: relative; height: 64px; background-color: var(--track); transition: background-color .45s; }
+.mz-seg .bx::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, var(--track) 0 4px, transparent 4px 8px); opacity: 0; transition: opacity .45s; }
+.mz-seg.na .bx { background-color: transparent; }
+.mz-seg.na .bx::after { opacity: 1; }
+.mz-seg i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: var(--band-2); border-top: 2px solid var(--pointer); transition: height var(--mz-t), border-top-width .3s; }
+.mz-seg.na i { border-top-width: 0; }
+.mz.still .mz-seg, .mz.still .mz-seg i, .mz.still .bx, .mz.still .bx::after { transition: none !important; }
+.mz-seg span { display: block; height: 2.7em; padding: 0 6px 4px 0; font: var(--t-mono); color: var(--ink-2); white-space: nowrap; overflow: hidden; line-height: 1.3; }
+.mz-seg span small { display: block; font: inherit; color: var(--ink); }
+.mz-seg.on .bx, .mz-seg:focus-visible .bx { box-shadow: inset 0 0 0 1.5px var(--ink); }
+.mz-read { font: var(--t-mono); color: var(--ink-2); min-height: 1.4em; padding-left: calc(4em + 14px); }
+.mz-read b { color: var(--ink); font-weight: 400; }
+
+/* Pleading paper: the second object on the bench */
+.where { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); gap: 40px; align-items: start; }
+.paper { position: relative; background: var(--paper); color: var(--paper-ink); box-shadow: 0 1px 2px rgba(0,0,0,.10), 0 16px 36px -12px rgba(0,0,0,.3); padding: 36px 34px 0 82px; font: 15px/var(--plh) var(--f-paper); }
+.paper::before { content: ""; position: absolute; top: 0; bottom: 0; left: 64px; width: 4px; border-left: 1px solid var(--paper-ink); border-right: 1px solid var(--paper-ink); }
+.paper::after { content: ""; position: absolute; top: 0; bottom: 0; right: 20px; border-left: 1px solid var(--paper-ink); }
+.cnums { position: absolute; left: 0; top: 36px; width: 52px; text-align: right; font: 12px/var(--plh) var(--f-paper); user-select: none; }
+.cnums span { display: block; height: var(--plh); }
+.csec { position: relative; display: block; width: calc(100% + 16px); font: inherit; line-height: var(--plh); color: var(--paper-ink); background: var(--paper); border: 0; padding: 0 8px; margin: 0 -8px; text-align: left; cursor: pointer; transition: transform .2s ease-out, box-shadow .2s ease-out; }
+.csec::before { content: ""; position: absolute; inset: 0; background: var(--heat-c, var(--pointer)); opacity: var(--heat, 0); mix-blend-mode: multiply; pointer-events: none; }
+/* The selected section lifts off the page; hover lifts it a little */
+.csec { border-radius: 2px; }
+.csec:hover { z-index: 1; transform: translateY(-2px); box-shadow: 0 0 0 1px var(--rule), 0 6px 14px -8px rgba(0,0,0,.35); }
+/* Border is a box-shadow ring, so the lifted section never shifts the lines around it */
+.csec[aria-pressed="true"] { z-index: 2; transform: translateY(-7px) scale(1.012); box-shadow: 0 0 0 1.5px var(--paper-ink), 0 20px 34px -12px rgba(0,0,0,.5), 0 3px 6px rgba(0,0,0,.18); }
+.csec:focus-visible { outline: 2px solid var(--paper-ink); outline-offset: 0; }
+.csec > * { position: relative; }
+.pl { display: block; min-height: var(--plh); }
+.pl.ctr { text-align: center; }
+.pl.h { font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+.pl.ind { padding-left: 3.5em; }
+.pl.sig { padding-left: 50%; white-space: nowrap; }
+.pp { display: block; text-indent: 3em; }
+.pcap { display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr); }
+.pc-l { box-shadow: 0 1px 0 var(--paper-ink); }
+.pc-p { text-align: center; }
+.pc-r { padding-left: 12px; }
+.r { display: inline-block; background: var(--paper-ink); height: .85em; vertical-align: -.06em; }
+.pfoot { display: grid; justify-items: center; margin: 14px -14px 0 -18px; padding: 8px 0 12px; border-top: 1px solid var(--paper-ink); font: 12px/1.5 var(--f-paper); }
+.pfoot span:last-child { letter-spacing: .06em; border-top: 1px solid var(--paper-ink); width: 100%; text-align: center; margin-top: 3px; padding-top: 2px; }
+.wpanel { position: sticky; top: 72px; display: grid; gap: 10px; border-top: 1px solid var(--ink); padding-top: 12px; }
+.w-name { font: var(--t-label); font-weight: 700; }
+.w-big { font: var(--t-stat); display: block; }
+.w-big.hi { color: var(--pointer); } .w-big.lo { color: var(--cool); }
+.w-ci { font: var(--t-mono); color: var(--ink-2); }
+.w-ci b { font-weight: 400; color: var(--ink); }
+.wsc { position: relative; height: 34px; margin: 6px 0 2px; }
+.wsc .ln { position: absolute; left: 0; right: 0; top: 16px; height: 2px; background: linear-gradient(90deg, var(--cool), rgba(44,106,138,.25) 50%, rgba(207,75,23,.25) 50%, var(--pointer)); }
+.wsc .ln::before, .wsc .ln::after { content: ""; position: absolute; top: -4px; border: 5px solid transparent; }
+.wsc .ln::before { left: -6px; border-left: 0; border-right: 7px solid var(--cool); }
+.wsc .ln::after { right: -6px; border-right: 0; border-left: 7px solid var(--pointer); }
+.wsc .mid { position: absolute; left: 50%; top: 6px; height: 22px; border-left: 1.5px solid var(--ink-2); }
+.wsc .dot { position: absolute; top: 17px; width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px; border-radius: 50%; border: 2px solid var(--card); transition: left .3s; }
+.wsc-l { display: flex; justify-content: space-between; font: var(--t-mono); color: var(--ink-2); }
+.wsc-l span:first-child { color: var(--cool); } .wsc-l span:last-child { color: var(--pointer); }
+
+/* Why it's hard */
+.slip { position: relative; background: var(--paper); color: var(--paper-ink); box-shadow: 0 1px 2px rgba(0,0,0,.10), 0 12px 28px -12px rgba(0,0,0,.28); padding: 22px 32px 22px 72px; font: 15px/var(--plh) var(--f-paper); }
+/* Pleading paper, like the complaint below: double rule in the left margin, single rule at right, numbered lines */
+.slip::before { content: ""; position: absolute; top: 0; bottom: 0; left: 54px; width: 4px; border-left: 1px solid var(--paper-ink); border-right: 1px solid var(--paper-ink); }
+.slip::after { content: ""; position: absolute; top: 0; bottom: 0; right: 16px; border-left: 1px solid var(--paper-ink); }
+.slip .cnums { top: 22px; width: 42px; }
+#bp-text span.bp { color: #8b8f8c; background: #ecedea; }
+/* Paste animation: boilerplate lands whole, the filer's own words type out. Layout is reserved, so nothing below moves. */
+#bp-text span.bp { transition: background-color .7s ease-out, color .7s ease-out; }
+#bp-text.anim .ch, #bp-text.anim span.bp { visibility: hidden; }
+#bp-text.anim .ch.on, #bp-text.anim span.bp.on { visibility: visible; }
+#bp-text span.bp.flash { background-color: #c6cbc6; color: #5f6461; transition: none; }
+#bp-text .caret { display: inline-block; width: 1.5px; height: 1.05em; margin: 0 -1.5px 0 0; vertical-align: -.16em; background: var(--paper-ink); animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.slip.replay { cursor: pointer; }
+.pair { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.pair > div:first-child { display: grid; gap: 12px; }
+
+/* PhantomDocket */
+.pd-intro { display: grid; grid-template-columns: minmax(0, max-content) minmax(160px, 1fr); gap: 48px; align-items: center; }
+.pd-intro .shead { margin-bottom: 20px; }
+.pd-intro .block { margin-top: 0; }
+.pd-ghost { width: 132px; height: auto; justify-self: center; overflow: visible; }
+/* Ghost: the gavel taps (pivot at the hand, 51.54,36.5 in user units; view-box origin is 5,7) and the eyes blink */
+.pd-ghost .gv { transform-box: view-box; transform-origin: 46.54px 29.5px; animation: gavel 3.6s ease-in-out infinite; }
+.pd-ghost .eyes ellipse { transform-box: fill-box; transform-origin: center; animation: blink 4.8s infinite; }
+@keyframes gavel { 0%, 55%, 100% { transform: rotate(0); } 64% { transform: rotate(-14deg); } 72% { transform: rotate(22deg); } 76% { transform: rotate(16deg); } 80% { transform: rotate(22deg); } 90% { transform: rotate(0); } }
+@keyframes blink { 0%, 90%, 96%, 100% { transform: scaleY(1); } 93% { transform: scaleY(.1); } }
+.pdf svg { overflow: visible; }
+.pdf { margin-top: 28px; }
+
+/* Limits, citation, footer */
+.limits { list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; }
+.limits li { padding: 18px 0; border-top: 1px solid var(--rule); }
+.limits b { display: block; font-weight: 600; margin-bottom: 4px; }
+.limits span { color: var(--ink-2); }
+/* Limitations as objections: one line each, open for the answer */
+.objs { max-width: 52em; border-bottom: 1px solid var(--rule); }
+.obj { border-top: 1px solid var(--rule); }
+.obj summary { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) 20px; gap: 12px; align-items: baseline; padding: 14px 0; cursor: pointer; }
+.obj summary::-webkit-details-marker { display: none; }
+.obj summary::after { content: "+"; font: 300 22px/1 var(--f-inst); color: var(--ink-2); text-align: right; transition: transform .2s; }
+.obj[open] summary::after { transform: rotate(45deg); }
+.obj summary:hover .obj-q { text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px; }
+.obj summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.obj-q { font: var(--t-sub); font-weight: 700; }
+.obj p { padding: 0 32px 18px 0; color: var(--ink-2); max-width: 52em; }
+.obj p b { color: var(--ink); font-weight: 600; }
+@media (max-width: 520px) { .obj p { padding-right: 0; } }
+.cite { position: relative; border-left: 2px solid var(--ink); cursor: copy; transition: background .2s; }
+.cite:hover { background: var(--card); }
+.cite:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.cite pre { margin: 0; padding: 6px 12px 6px 18px; overflow-x: auto; font: var(--t-mono); line-height: 1.6; }
+.cite-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.cite-hint { font: var(--t-label); color: var(--ink-2); white-space: nowrap; }
+/* Compact closing sections: team and cite */
+section.band.tight { padding-block: 44px; }
+.tight .shead { margin-bottom: 20px; gap: 6px; }
+.tight .shead p { font: var(--t-body); color: var(--ink-2); }
+/* Team: one row of photos; hover or focus shows name and post below, click opens their site */
+.crew { display: flex; flex-wrap: wrap; gap: 16px; }
+.crew a { display: grid; gap: 6px; width: 96px; text-decoration: none; color: var(--ink-2); }
+.crew a:focus-visible { outline: none; }
+.crew img { display: block; width: 96px; height: 96px; object-fit: cover; filter: saturate(.45) brightness(1.06) contrast(.95); border: 1.5px solid var(--ink); background: var(--card); transition: filter .25s, transform .25s ease-out, box-shadow .25s ease-out; }
+.crew a:hover img, .crew a.on img, .crew a:focus-visible img { filter: none; transform: translateY(-3px); box-shadow: 0 10px 18px -10px rgba(0,0,0,.45); }
+.crew a:focus-visible img { outline: 2px solid var(--ink); outline-offset: 2px; }
+.crew-n { font: var(--t-label); }
+@media (hover: hover) { .crew-n { display: none; } }
+.crew-read { margin-top: 14px; min-height: 4.6em; max-width: 46em; font: var(--t-cap); color: var(--ink-2); }
+.crew-read b { display: block; font: var(--t-label); font-weight: 700; color: var(--ink); }
+.closing { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.closing .crew { gap: 12px; }
+.closing .crew a { width: 88px; }
+.closing .crew img { width: 88px; height: 88px; }
+.closing .crew-read { min-height: 6.4em; }
+.closing .cite pre { font-size: 12px; }
+footer { padding-block: 28px 44px; border-top: 1px solid var(--rule); font: var(--t-label); line-height: 1.6; color: var(--ink-2); }
+footer .wrap { display: grid; gap: 8px; }
+footer b { color: var(--ink); }
+.flogo { display: flex; align-items: center; gap: 14px; }
+.flogo img { display: block; height: 24px; width: auto; }
+
+@media (max-width: 960px) {
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block: 32px 48px; }
+  .two, .where, .block.two, .pair { grid-template-columns: minmax(0, 1fr) !important; }
+  .wpanel { position: static; }
+  .pd-intro { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .pd-ghost { order: -1; justify-self: start; width: 60px; }
+  .limits { grid-template-columns: minmax(0, 1fr); }
+  .closing { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+}
+@media (max-width: 640px) {
+  .crew-read, .closing .crew-read { min-height: 10em; }
+  section.band.tight { padding-block: 36px; }
+}
+@media (max-width: 520px) {
+  :root { --t-readout: 700 36px/1 var(--f-inst); }
+  .steps button { padding: 10px 8px; }
+  /* Keep the dial and its step text on one phone screen */
+  .inst-head { padding: 8px 14px; }
+  .inst-title { font-size: 15px; }
+  .dial-wrap { padding: 6px 14px 0; }
+  #dial { max-width: 236px; margin: 0 auto; }
+  .readout { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 0 14px 10px; }
+  .readout .setting { grid-column: 1 / -1; grid-row: 2; height: 4.2em; -webkit-line-clamp: 3; font-size: 12px; }
+  .readout .bandtxt { grid-row: 1; grid-column: 2; text-align: right; min-height: 0; font-size: 12px; }
+  .steps button { min-height: 40px; padding: 8px; }
+  .hero-r > .panel { padding-top: 12px; grid-template-columns: minmax(0, 1fr) 24px; gap: 6px; }
+  .hero-r .ptext { gap: 8px; }
+  .hero-r .ptext p { font-size: 15.5px; line-height: 1.48; }
+  .hero-r .pnext { width: 24px; font-size: 32px; }
+  .bar { grid-template-columns: 8.5em minmax(0, 1fr) 4.4em; gap: 8px; }
+  .scale-note { padding-left: calc(8.5em + 8px); padding-right: calc(4.4em + 8px); }
+  .rgv .bar { grid-template-columns: 10em minmax(0, 1fr) 4.4em; }
+  .lossb .bar { grid-template-columns: 7.5em minmax(0, 1fr) 7em; }
+  .scale-note.rgv { padding-left: calc(10em + 8px); }
+  .mz-row > b { grid-column: 1; grid-row: 1; }
+  .mz-bar { grid-column: 1 / -1; grid-row: 2; }
+  .mz-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .mz-row > b { padding-bottom: 0; } .mz-row > b span { display: inline; margin-left: 8px; }
+  .mz-read { padding-left: 0; }
+  .mz-foot .mz-read { min-height: 5.6em; }
+  .top nav a[data-hide] { display: none; }
+  section.band { padding-block: 56px; }
+  .paper { padding: 24px 12px 0 40px; font-size: 13.5px; --plh: 24px; }
+  .paper::before { left: 30px; width: 3px; } .paper::after { right: 6px; }
+  .cnums { width: 22px; top: 24px; font-size: 10px; }
+  .slip { padding: 18px 16px 18px 42px; font-size: 13.5px; --plh: 24px; }
+  .slip::before { left: 30px; width: 3px; } .slip::after { right: 6px; }
+  .slip .cnums { top: 18px; }
+  .pcap { grid-template-columns: minmax(0, 1fr); } .pc-p { display: none; } .pc-r { padding-left: 0; }
+  .pl.ind { padding-left: 2em; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- DEV: palette switcher (temporary) ---------- */
+:root[data-pal] { --band: color-mix(in srgb, var(--pointer) 15%, transparent); --band-2: color-mix(in srgb, var(--pointer) 34%, transparent); --track: color-mix(in srgb, var(--ink) 9%, transparent); }
+:root[data-pal="cardinal"] { --bench: #f1efec; --card: #faf9f7; --paper: #fffefc; --ink: #1e1b1b; --ink-2: #5d5756; --rule: #cfc9c4; --pointer: #8c1515; --cool: #175e54; }
+:root[data-pal="cobalt"]   { --bench: #e6e9ee; --card: #f7f8fa; --paper: #fdfdfe; --ink: #161a22; --ink-2: #525a68; --rule: #bfc6d1; --pointer: #2f5fd0; --cool: #c0612b; }
+:root[data-pal="manila"]   { --bench: #ece4d0; --card: #f8f3e6; --paper: #fffcf3; --ink: #22201b; --ink-2: #5e5748; --rule: #cdbf9f; --pointer: #1f6f5c; --cool: #a4532c; }
+:root[data-pal="plum"]     { --bench: #ebe7ea; --card: #f8f6f7; --paper: #fefdfd; --ink: #1d1a1e; --ink-2: #5c5560; --rule: #cbc3ca; --pointer: #7b2d6b; --cool: #2f7a6e; }
+:root[data-pal="night"]    { --bench: #1b1f22; --card: #242a2e; --paper: #f4f3ee; --ink: #e8ebe8; --ink-2: #a3aba6; --rule: #3c4448; --pointer: #f0a03c; --cool: #6cb3d6; color-scheme: dark; }
+:root[data-pal="night"] .flogo img { filter: invert(1); }
+#devpal { position: fixed; right: 12px; top: 60px; z-index: 50; display: flex; align-items: center; gap: 6px; padding: 6px 8px; font: 400 12px/1 var(--f-mono); color: var(--ink); background: var(--card); border: 1px dashed var(--ink-2); box-shadow: 0 6px 16px -10px rgba(0,0,0,.4); }
+#devpal select { font: inherit; color: inherit; background: var(--bench); border: 1px solid var(--rule); padding: 3px 4px; }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top">Detection Objection</a>
+    <nav aria-label="Sections">
+      <a href="#courts">Findings</a>
+      <a href="#hard" data-hide>Why it's hard</a>
+      <a href="#method" data-hide>PhantomDocket</a>
+      <a href="#limits" data-hide>Limits</a>
+      <a href="https://dho.stanford.edu/wp-content/uploads/GenAI_Courts.pdf" target="_blank" rel="noopener">Paper</a>
+      <a href="#cite">Cite</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="bench">
+    <div class="wrap hero">
+      <div class="intro">
+        <h1>Detection Objection<span class="scan" aria-hidden="true"></span></h1>
+        <p class="q">How much of what's filed in state court is now drafted with AI? The answer depends on how you measure. We calibrate a detector against filings with known AI use, then measure four courts.</p>
+        <div class="intro-foot">
+          <p class="authors"><b>Javokhir Arifov, Alexander Spangher, Jonathan Hennessy, Diya Karan, Emaan Hariri, Daniel E. Ho</b><br>Stanford University</p>
+          <div class="ctas">
+            <a class="btn" href="https://dho.stanford.edu/wp-content/uploads/GenAI_Courts.pdf" target="_blank" rel="noopener">Paper</a>
+            <a class="btn" href="https://huggingface.co/datasets/Arifov/PhantomDocket" target="_blank" rel="noopener">PhantomDocket data</a>
+            <a class="btn" href="https://hai.stanford.edu/news/ai-might-be-flooding-state-court-houses-but-proving-it-is-another-matter" target="_blank" rel="noopener">HAI Blog</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-r">
+      <figure class="inst" aria-labelledby="inst-title">
+        <div class="inst-head"><span class="inst-title" id="inst-title">AI-assisted share of Santa&nbsp;Clara complaints, 2026</span></div>
+        <div class="dial-wrap">
+          <svg id="dial" viewBox="-40 0 560 272" role="img" aria-label="Dial from 0 to 100 percent showing the share of complaints flagged or estimated as drafted with AI">
+            <g id="d-band"></g>
+            <g id="d-scale"></g>
+            <g id="d-ghosts"></g>
+            <g class="needle" id="d-needle"><line x1="240" y1="250" x2="240" y2="56" stroke="var(--pointer)" stroke-width="4" stroke-linecap="round"></line></g>
+            <circle cx="240" cy="240" r="11" fill="var(--ink)"></circle>
+          </svg>
+        </div>
+        <div class="readout" aria-live="polite">
+          <span class="big num" id="r-big">52.1%</span>
+          <span class="setting" id="r-setting">Flagged as AI: setting validated on PhantomDocket</span>
+          <span class="bandtxt" id="r-band"></span>
+        </div>
+        <div class="steps" role="group" aria-label="Steps">
+          <button type="button" data-s="0" aria-current="step"><b><span class="sn">1</span>Setting</b></button>
+          <button type="button" data-s="1"><b><span class="sn">2</span>Threshold</b></button>
+          <button type="button" data-s="2"><b><span class="sn">3</span>Calibrate</b></button>
+        </div>
+      </figure>
+      <div class="panel" id="panel"></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="band" id="courts" aria-labelledby="h-courts">
+    <div class="wrap">
+      <div class="shead">
+        <h2 id="h-courts">Four trial courts</h2>
+        <p>Our detector corpus contains 127,518 case-initiating civil filings from four counties. For the comparable trend below, we exclude collections and debt cases, leaving 79,081 complaints. Estimated AI-assisted drafting is near zero before 2023, then rises sharply. By 2026 the California courts read more than twice the Oklahoma ones.</p>
+      </div>
+
+      <div class="block">
+        <figure class="fig">
+          <span class="fig-t">Estimated share of complaints with AI-assisted drafting, by filing year</span>
+          <svg id="trend" viewBox="0 0 1060 300" role="img" aria-label="Line chart of estimated AI-assisted share by year for four trial courts, 2020 to 2026"></svg>
+          </figure>
+        <p class="cap">The highlighted court shows 95% bootstrap intervals for each year. Select a court name to highlight it; Santa Clara is the court on the dial. Collections and debt cases are excluded.</p>
+      </div>
+
+      <div class="block" id="casemix">
+        <h3>Case mix</h3>
+        <p>Some types of case show far more AI-assisted drafting than others, and our four corpora contain them in very different proportions. Employment and business complaints estimate highest, at 59–98%. They are 31% of Santa Clara's non-collections complaints in 2026 and under 3% of Tulsa's. Personal injury, the one large type all four courts share, estimates at 21–30% everywhere. So part of the gap between the states is case mix. Not all of it: contract complaints still estimate at 16–21% in California and 9–12% in Oklahoma.</p>
+        <p>The mix also shifted in 2026, toward the high-reading types in California and away from them in Oklahoma. Holding each court's case mix at its 2020–22 shares, Santa Clara's 2026 estimate falls from 37.8% to 32.8% and San Francisco's from 35.6% to 31.9%, while Tulsa's rises from 16.9% to 20.7% and Oklahoma County's from 16.1% to 19.3%. At fixed mix, the gap between the states narrows from about 20 points to about 12.</p>
+        <p>The mix also reflects how we collected, not only what gets filed. We scraped three different public court systems, under different rules for each court. In the Oklahoma counties we collected civil cases seeking more than $10,000. In San Francisco we collected general civil cases, and that corpus is not a complete census. In Santa Clara we collected a listed set of civil case types that leaves out collections. A court with more employment cases in our data may simply have had more of them pass our rules. Coverage also shifts within a court: San Francisco's corpus nearly doubles from 2024 to 2025, at least partly because its 2024 collection was less complete, so that jump is not growth in filings.</p>
+        <figure class="fig">
+          <span class="fig-t">ScoreMix by type of case</span>
+          <div class="mz" id="mz"></div>
+          <div class="mz-foot"><div class="mz-read" id="mz-read" aria-live="polite"></div><div class="seg" id="mz-year" role="group" aria-label="Year"></div></div>
+        </figure>
+        <p class="cap">Width is each type's share of the court's complaints; orange height is its ScoreMix estimate. Hatched means not reported: fewer than 100 complaints of that type that year or in 2020–22. Collections cases excluded. SC is Santa Clara, SF San Francisco, OKC Oklahoma County.</p>
+      </div>
+
+      <div class="block">
+        <h3>Who files with AI</h3>
+        <p>Self-represented filers adopted AI earlier and faster. In the paper, we also find that use persists: attorneys flagged in one year were flagged again the next 35% of the time in Tulsa, 55% in San Francisco and 65% in Santa Clara.</p>
+        <figure class="fig">
+          <span class="fig-t">Santa Clara, ScoreMix estimate by who filed the complaint</span>
+          <svg id="who" viewBox="0 0 1000 300" role="img" aria-label="Line chart: self-represented filers rise from near zero in 2022 to 71.6 percent in 2026; attorney-represented filers rise to 33.5 percent"></svg>
+        </figure>
+        <p class="cap">Whiskers are 95% intervals. 2026 has 266 self-represented and 2,913 attorney complaints.</p>
+      </div>
+
+      <div class="block">
+        <h3>Where in a complaint</h3>
+        <p>We ask which parts of a complaint the raw, uncalibrated detector scores highest. It responds most to the parts a filer writes in their own words. Select a section to see how it compares with the rest of the complaint.</p>
+        <div class="where">
+          <div class="paper" id="cdoc" aria-label="Illustrative complaint on pleading paper. Select a section to see how strongly the detector responds to it.">
+            <div class="cnums" aria-hidden="true"></div>
+            <button type="button" class="csec" data-k="caption">
+              <span class="pl"><span class="r" style="width:9em"></span></span>
+              <span class="pl">Plaintiff in Pro Per</span>
+              <span class="pl">&nbsp;</span>
+              <span class="pl ctr">SUPERIOR COURT OF THE STATE OF CALIFORNIA</span>
+              <span class="pl ctr">CITY AND COUNTY OF SAN FRANCISCO</span>
+              <span class="pcap"><span class="pc-l"><span class="pl"><span class="r" style="width:6.5em"></span>,</span><span class="pl ind">Plaintiff,</span><span class="pl">v.</span><span class="pl"><span class="r" style="width:5em"></span> LLC,</span><span class="pl ind">Defendant.</span></span><span class="pc-p" aria-hidden="true"><span class="pl">)</span><span class="pl">)</span><span class="pl">)</span><span class="pl">)</span><span class="pl">)</span></span><span class="pc-r"><span class="pl">Case No. CGC-26-<span class="r" style="width:3.2em"></span></span><span class="pl">&nbsp;</span><span class="pl"><b>COMPLAINT FOR DAMAGES</b></span><span class="pl">&nbsp;</span><span class="pl">Unlimited Civil Case</span></span></span>
+            </button>
+            <button type="button" class="csec" data-k="venue"><span class="pl ctr h">JURISDICTION AND VENUE</span><span class="pp">1. This Court has jurisdiction over this action. Venue is proper in this county because the acts alleged occurred here.</span></button>
+            <button type="button" class="csec" data-k="facts"><span class="pl ctr h">STATEMENT OF FACTS</span><span class="pp">2. Plaintiff began working for Defendant in March 2021. Throughout her tenure she consistently demonstrated dedication and professionalism.</span><span class="pp">3. On January 9, 2026, she reported blocked fire exits to her supervisor. Two weeks later she was told her position had been eliminated.</span></button>
+            <button type="button" class="csec" data-k="causes"><span class="pl ctr h">FIRST CAUSE OF ACTION</span><span class="pl ctr">(Wrongful Termination in Violation of Public Policy)</span><span class="pp">4. Defendant terminated Plaintiff because she reported unsafe working conditions, in clear violation of the fundamental public policy embodied in Labor Code section 6310.</span></button>
+            <button type="button" class="csec" data-k="prayer"><span class="pl ctr h">PRAYER FOR RELIEF</span><span class="pp">WHEREFORE, Plaintiff prays for judgment against Defendant for compensatory damages according to proof, costs of suit, and such other relief as the Court deems just.</span></button>
+            <button type="button" class="csec" data-k="verif"><span class="pl ctr h">VERIFICATION</span><span class="pp">I declare under penalty of perjury under the laws of the State of California that the foregoing is true and correct.</span><span class="pl sig">/s/ <span class="r" style="width:6em"></span></span><span class="pl sig">Plaintiff in Pro Per</span></button>
+            <button type="button" class="csec" data-k="attach"><span class="pl ctr h">EXHIBITS</span><span class="pp">Exhibit A: Termination letter dated January 23, 2026. Exhibit B: Employee handbook, section 4.2.</span></button>
+            <div class="pfoot"><span>- 1 -</span><span>COMPLAINT FOR DAMAGES</span></div>
+          </div>
+          <div class="wpanel" aria-live="polite">
+            <span class="w-name" id="w-name">Causes of action</span>
+            <strong class="w-big" id="w-val">Scores higher than the rest</strong>
+            <div class="wsc" id="wsc" aria-hidden="true"><span class="ln"></span><span class="mid"></span></div>
+            <div class="wsc-l" aria-hidden="true"><span>lower</span><span>50 = baseline</span><span>higher</span></div>
+            <span class="w-ci" id="w-ci"></span>
+            <p id="w-text"></p>
+            <p class="cap">We compare detector scores between parts of a complaint, not AI prevalence. We labeled a sample of 400-word windows from 2026 complaints in Oklahoma County, Tulsa and San Francisco: windows scoring above 0.10, plus an equal number of lower-scoring windows matched on court and year. Pair a labeled window from this section with one from elsewhere: the number is how often, out of 100, this section's window scores higher. Santa Clara complaints were not labeled. The complaint text is illustrative.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="hard" aria-labelledby="h-hard">
+    <div class="wrap">
+      <div class="shead">
+        <h2 id="h-hard">Why AI-assisted legal text is hard to detect</h2>
+        <p>Detectors are built on general prose. Court filings weaken their signal in three ways.</p>
+      </div>
+
+      <div class="block pair">
+        <div>
+          <h3>Boilerplate dilutes the signal</h3>
+          <p>We count a run of 8 tokens as boilerplate if it appears in at least 1% of filings. By that measure about 26% of the text in our filings is boilerplate, against at most 6% in press releases or paper abstracts. A detector can't tell who wrote words that everyone writes.</p>
+          <p class="cap">At right, an excerpt from a complaint filed in San Francisco Superior Court in 2022. Grey marks language caught by our definition: about half of the words. The filer's own account is the sentence that follows.</p>        </div>
+        <figure>
+          <div class="slip"><div class="cnums" aria-hidden="true"></div><p id="bp-text"><span class="bp">Plaintiff is informed and believes and thereupon alleges that, at all times herein mentioned, each of the Defendants</span> sued herein was <span class="bp">the agent and employee of each of the remaining Defendants, and was at all times acting within the course and scope of such agency and employment.</span> On or about June 28, 2020, Plaintiff, a lawful tenant of Defendant at the Premises, leaned against the handrail, which gave way and caused Plaintiff to fall approximately 10 feet to the concrete patio below and suffer severe injuries and damages.</p></div>
+        </figure>
+      </div>
+
+      <div class="block pair">
+        <div>
+          <h3>Legal drafting is a narrow register</h3>
+          <p>Court petitions give a writer fewer choices of what to say next than press releases, abstracts or consumer complaints do. We measured this as a language model's uncertainty about the next word while drafting. A legal petition runs at 0.35 nats per token, against 0.43 for a press release, 0.53 for a scientific abstract and 0.57 for a consumer complaint. When everyone writes from a small vocabulary, human and AI text converge.</p>
+          <p>Ask the AI to write like a lawyer, and a word-frequency detector loses much of its edge on petitions. For context, AUROC of 0.50 is no better than guessing randomly.</p>
+        </div>
+        <figure class="fig">
+          <span class="fig-t">Classification of synthetic AI drafts vs. human writing (AUROC)</span>
+          <div class="bars lossb">
+            <div class="bar"><span>Court petitions</span><span class="t"><i style="--v:77"></i><i class="loss" style="--lo:77;--v:16"></i></span><b>0.77<span class="was">0.93</span></b></div>
+            <div class="bar"><span>Press releases</span><span class="t"><i style="--v:83"></i><i class="loss" style="--lo:83;--v:10"></i></span><b>0.83<span class="was">0.93</span></b></div>
+          </div>
+          <p class="cap">Striped: what the detector loses when the AI is told to write like a lawyer.</p>
+        </figure>
+      </div>
+
+      <div class="block pair">
+        <div>
+          <h3>How filers use AI is unknown</h3>
+          <p>Many detectors learn what AI text looks like from AI rewrites of human documents. A litigant may instead ask an AI questions and paste in its answers, which produces different text. We generated 1,134 such questions about 378 real petition passages and compared how a rewrite-trained word-frequency detector does on rewrites and on answers.</p>
+          <p>For a self-represented filer's "help me write this," the detector catches 37–59% of answers across three open models, against 90% of rewrites. Across all three kinds of question, it catches 16–72% of answers. Refit on answers, it separates them from human text with AUROC 0.89–1.00. That is why we calibrate on PhantomDocket.</p>
+        </div>
+        <figure class="fig">
+          <span class="fig-t">Share of AI text caught</span>
+          <div class="bars lossb">
+            <div class="bar"><span>Llama-3.1-8B</span><span class="t"><i style="--v:55"></i><i class="loss" style="--lo:55;--v:35"></i></span><b>55%<span class="was">90%</span></b></div>
+            <div class="bar"><span>Mistral-7B</span><span class="t"><i style="--v:59"></i><i class="loss" style="--lo:59;--v:31"></i></span><b>59%<span class="was">90%</span></b></div>
+            <div class="bar"><span>Qwen3-8B</span><span class="t"><i style="--v:37"></i><i class="loss" style="--lo:37;--v:53"></i></span><b>37%<span class="was">90%</span></b></div>
+          </div>
+          <p class="cap">Striped: caught on AI rewrites, missed on AI answers.</p>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="method" aria-labelledby="h-method">
+    <div class="wrap">
+      <div class="pd-intro">
+        <div>
+      <div class="shead">
+        <h2 id="h-method">PhantomDocket, the reference</h2>
+        <p>To calibrate an instrument, we needed real AI drafting data. We built a dataset of court filings with known AI use from judges' rulings on the <a href="https://www.damiencharlotin.com/hallucinations/" target="_blank" rel="noopener">Charlotin Hallucinations Database</a>. These rulings call out hallucinated citations and misquotations. We traced them back to the offending filing that contained them.</p>
+      </div>
+
+        </div>
+        <svg class="pd-ghost" viewBox="5 7 61 52" width="132" height="113" aria-hidden="true"><path d="M13.44 53.52 V41.2 Q6.4 41.2 7.72 35.92 Q9.04 31.96 13.44 33.28 V28.88 A16.72 16.72 0 0 1 46.88 28.88 V33.28 Q51.28 31.96 52.6 35.92 Q53.92 41.2 46.88 41.2 V53.52 Q41.34 58.8 35.7 53.52 Q30.16 58.8 24.62 53.52 Q18.98 58.8 13.44 53.52 Z" fill="#ffffff" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><g class="eyes"><ellipse cx="24.88" cy="28.88" rx="2.3" ry="3.35" fill="#111111"/><ellipse cx="35.44" cy="28.88" rx="2.3" ry="3.35" fill="#111111"/></g><g class="gv"><path d="M51.54 36.5 L56.5 15.0" fill="none" stroke="#111111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><g transform="translate(56.5 15) rotate(13)" fill="#111111"><rect x="-4.2" y="-2.6" width="8.4" height="5.2" rx="1"/><rect x="-6.6" y="-3.9" width="2.6" height="7.8" rx="1"/><rect x="4" y="-3.9" width="2.6" height="7.8" rx="1"/></g></g></svg>
+      </div>
+
+      <figure class="fig block pdf">
+        <svg id="pdflow" role="img" aria-label="Of 1,848 cases in Charlotin's database, 1,279 are U.S. cases; 1,164 have a docket we found; 928 are on CourtLink or Bloomberg Law; 679 have the flagged filing identified in the docket; 619 retrieved cases, 980 filings total."></svg>
+      </figure>
+
+      <div class="block">
+        <p class="lede">PhantomDocket is also how we chose the instrument. For comparison, we used filings by the judge and opposing counsel in the same cases. We compared detectors on how well they told the two groups apart. Then we searched EditLens's settings: how long each window is, which score it reads, and how window scores combine. We kept the setting that best separated them on filings held out from the search. That is the setting on the dial at the top of this page.</p>
+      </div>
+
+      <div class="block two">
+        <figure class="fig">
+          <span class="fig-t">Detectors on PhantomDocket: hallucination filings vs. controls, AUROC</span>
+          <div class="bars">
+            <div class="bar"><span>Pangram 3.3.2</span><span class="t mid"><i style="--v:94.6"></i></span><b>0.946</b></div>
+            <div class="bar em"><span>EditLens (used)</span><span class="t mid"><i style="--v:89.6"></i></span><b>0.896</b></div>
+            <div class="bar"><span>MLE, Oklahoma</span><span class="t mid"><i style="--v:77.7"></i></span><b>0.777</b></div>
+            <div class="bar"><span>MLE, Santa Clara</span><span class="t mid"><i style="--v:76.7"></i></span><b>0.767</b></div>
+            <div class="bar"><span>MLE, San Francisco</span><span class="t mid"><i style="--v:76.1"></i></span><b>0.761</b></div>
+          </div>
+          <div class="scale-note"><span>0</span><span>0.5 chance</span><span>1</span></div>
+          <p class="cap">Pangram classifies best but costs too much to run on every filing. EditLens is open and close behind.</p>
+        </figure>
+        <figure class="fig">
+          <span class="fig-t">Same detector, different scoring rules: Pangram on PhantomDocket, partial AUROC</span>
+          <div class="bars rgv">
+            <div class="bar em"><span>Average of window scores</span><span class="t mid"><i style="--v:89.0"></i></span><b>0.890</b></div>
+            <div class="bar"><span>Highest window score</span><span class="t mid"><i style="--v:86.4"></i></span><b>0.864</b></div>
+            <div class="bar"><span>Pangram's "AI detected" label</span><span class="t mid"><i style="--v:70.3"></i></span><b>0.703</b></div>
+            <div class="bar"><span>Share of windows labeled AI</span><span class="t mid"><i style="--v:69.9"></i></span><b>0.699</b></div>
+            <div class="bar"><span>Median of window labels</span><span class="t mid"><i style="--v:52.7"></i></span><b>0.527</b></div>
+          </div>
+          <div class="scale-note rgv"><span>0</span><span>0.5 chance</span><span>1</span></div>
+          <p class="cap">Five of the 252 rules we tried for turning Pangram's window-by-window scores into one score per filing. Averaging the window scores, as the paper does, is among the best; most rules that average the scores land at 0.86–0.89. Rules built on Pangram's own labels fall toward 0.70, and the worst is barely above chance. Partial AUROC counts only false-positive rates under 10%, so it runs lower than the chart at left.</p>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="limits" aria-labelledby="h-limits">
+    <div class="wrap">
+      <div class="shead">
+        <h2 id="h-limits">Limitations</h2>
+        <p>Misreading an AI detector can lead to sanctions, disciplinary actions, and biased outcomes. Read these before citing a number.</p>
+      </div>
+      <div class="objs">
+        <details class="obj">
+          <summary><span class="obj-q">Can this tell me whether one filing used AI?</span></summary>
+          <p><b>No. ScoreMix measures corpus prevalence, not individual filings.</b> Estimates describe the share of a court's complaints. They should not be used to say whether any one filing used AI. Even the best detector has real false positive and false negative rates. On PhantomDocket, Pangram's average window score wrongly flags 7.2% of the human control filings and misses 11.4% of the AI-assisted ones. Its own, more cautious label wrongly flags 0.9% but misses about half.</p>
+        </details>
+        <details class="obj">
+          <summary><span class="obj-q">Is this the share of filings with hallucinations?</span></summary>
+          <p><b>No. ScoreMix is not a hallucination rate.</b> It is the share of complaints whose scores resemble the PhantomDocket filings. While not tested, it's probable that most AI-assisted complaints do not contain a hallucination.</p>
+        </details>
+        <details class="obj">
+          <summary><span class="obj-q">Could the estimates be too low?</span></summary>
+          <p><b>Possibly. The readings may run low.</b> PhantomDocket captures AI use careless enough to produce a hallucination, and its filings are mostly briefs and motions, not complaints. ScoreMix assumes AI-assisted complaints score like these filings. If they score lower or higher, either the AI-assistance or the complaint text itself is distributionally different from what is seen in PhantomDocket. It's likely that AI use reads as human and the estimate runs low. We have no complaints with known AI use to check this directly.</p>
+        </details>
+        <details class="obj">
+          <summary><span class="obj-q">Can I compare the four courts directly?</span></summary>
+          <p><b>No. Courts aren't directly comparable.</b> The headline estimates are not standardized for case mix, so a shift toward case types with more AI use can move them even if use within each type stays the same. Holding each court's 2020–22 mix moves the 2026 estimates by 3 to 5 points. Case mix differs between courts, and we can't yet separate it from geography. Both California counties are at the center of the Bay Area's tech industry, but our data can't show that proximity is the cause.</p>
+        </details>
+        <details class="obj">
+          <summary><span class="obj-q">Doesn't the detector setting still change the answer?</span></summary>
+          <p><b>Yes. Settings still matter, less.</b> Calibration narrows the spread across settings without removing it. For Santa Clara 2026, ScoreMix stays between 29.0% and 46.9% across the other 44 settings, against 1.8% to 97.7% for raw flags. This is why we use PhantomDocket to choose the optimal setting.</p>
+        </details>
+        <details class="obj">
+          <summary><span class="obj-q">Is AI-assisted text in court filings a bad thing?</span></summary>
+          <p><b>Not necessarily. ScoreMix just estimates use.</b> AI tools may lower the barriers to justice: a self-represented filer can now draft a complaint or answer they couldn't have written, or paid a lawyer to write, before. The same tools may also overload courts with more cases and filings, and with hallucinated citations and quotes that judges and opposing parties have to catch.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="band tight" id="team" aria-labelledby="h-team">
+    <div class="wrap closing">
+      <div>
+        <div class="shead">
+          <h2 id="h-team">Who we are</h2>
+          <p>This project comes from the <a href="https://reglab.stanford.edu/" target="_blank" rel="noopener">Stanford Regulation, Evaluation, and Governance Lab (RegLab)</a>.</p>
+        </div>
+        <div class="crew" id="crew">
+          <a href="https://stanford.edu/~javokhir" target="_blank" rel="noopener" data-name="Javokhir Arifov" data-role="Research Fellow at Stanford RegLab; M.S. Computer Science and B.A. Linguistics ’26." aria-label="Javokhir Arifov: Research Fellow at Stanford RegLab; M.S. Computer Science and B.A. Linguistics ’26. Opens their site."><img src="images/team/arifov.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Javokhir Arifov</span></a>
+          <a href="https://www.alexander-spangher.com/" target="_blank" rel="noopener" data-name="Alexander Spangher" data-role="Postdoctoral Scholar at Stanford University, affiliated with RegLab, the Stanford Artificial Intelligence Laboratory (SAIL) and Stanford HAI." aria-label="Alexander Spangher: Postdoctoral Scholar at Stanford University, affiliated with RegLab, the Stanford Artificial Intelligence Laboratory (SAIL) and Stanford HAI. Opens their site."><img src="images/team/spangher.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Alexander Spangher</span></a>
+          <a href="https://reglab.stanford.edu/team-members/jonathan-hennessy/" target="_blank" rel="noopener" data-name="Jonathan Hennessy" data-role="Senior Research Manager at Stanford RegLab." aria-label="Jonathan Hennessy: Senior Research Manager at Stanford RegLab. Opens their site."><img src="images/team/hennessy.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Jonathan Hennessy</span></a>
+          <a href="https://reglab.stanford.edu/team-members/diya-karan/" target="_blank" rel="noopener" data-name="Diya Karan" data-role="Research Assistant at Stanford RegLab and a student at Stanford University." aria-label="Diya Karan: Research Assistant at Stanford RegLab and a student at Stanford University. Opens their site."><img src="images/team/karan.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Diya Karan</span></a>
+          <a href="https://emaan.me/" target="_blank" rel="noopener" data-name="Emaan Hariri" data-role="Former Law Student Fellow at Stanford RegLab; J.D., Stanford Law School." aria-label="Emaan Hariri: Former Law Student Fellow at Stanford RegLab; J.D., Stanford Law School. Opens their site."><img src="images/team/hariri.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Emaan Hariri</span></a>
+          <a href="https://dho.stanford.edu/" target="_blank" rel="noopener" data-name="Daniel E. Ho" data-role="William Benjamin Scott and Luna M. Scott Professor of Law, Professor of Political Science and (by courtesy) of Computer Science at Stanford; Senior Fellow and Associate Director at Stanford HAI; Senior Fellow at SIEPR; and Director of Stanford RegLab." aria-label="Daniel E. Ho: William Benjamin Scott and Luna M. Scott Professor of Law, Professor of Political Science and (by courtesy) of Computer Science at Stanford; Senior Fellow and Associate Director at Stanford HAI; Senior Fellow at SIEPR; and Director of Stanford RegLab. Opens their site."><img src="images/team/ho.jpg" alt="" width="96" height="96" loading="lazy"><span class="crew-n" aria-hidden="true">Daniel E. Ho</span></a>
+        </div>
+        <p class="crew-read" id="crew-read" aria-hidden="true"></p>
+      </div>
+      <div id="cite">
+        <div class="shead cite-head"><h2 id="h-cite">Cite</h2><span class="cite-hint" id="cite-hint" aria-live="polite">Click to copy</span></div>
+        <div class="cite" id="citeBox" role="button" tabindex="0" aria-label="Copy BibTeX citation">
+  <pre id="bib">@article{arifov2026detection,
+  title  = {Detection Objection:
+            Documenting, Calibrating, and
+            Detecting the Rise of AI-Assisted
+            Text in U.S. State Courts},
+  author = {Arifov, Javokhir and Spangher,
+            Alexander and Hennessy, Jonathan
+            and Karan, Diya and Hariri, Emaan
+            and Ho, Daniel E.},
+  year   = {2026}
+}</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="flogo"><a href="https://reglab.stanford.edu/" target="_blank" rel="noopener"><img src="images/reglab-logo.svg" alt="Stanford RegLab: Regulation, Evaluation, and Governance Lab" width="91" height="24"></a><span>© 2026</span></span>
+    <p>Supported by Stanford HAI and Stanford Impact Labs. We thank Damien Charlotin for maintaining the AI Hallucination Cases Database, and Pangram Labs for research credits and access to EditLens. Pangram Labs had no role in the study design, analysis or writing.</p>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+  const fmt = v => v < 0.005 ? '≈0%' : (Math.round(v * 10) / 10).toString().replace(/\.0$/, '') + '%';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- The dial ---------- */
+  const CX = 240, CY = 240, R = 200;
+  const ang = p => Math.PI * (1 - p / 100);
+  const pt = (p, r) => [CX + r * Math.cos(ang(p)), CY - r * Math.sin(ang(p))];
+  const rot = p => -90 + p * 1.8;
+  const scale = document.getElementById('d-scale');
+  el('path', { d: `M${pt(0, R)} A${R} ${R} 0 0 1 ${pt(50, R)} A${R} ${R} 0 0 1 ${pt(100, R)}`, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 1.5 }, scale);
+  for (let p = 0; p <= 100; p += 2.5) {
+    const major = p % 10 === 0, mid = p % 5 === 0;
+    const [x1, y1] = pt(p, R), [x2, y2] = pt(p, R - (major ? 18 : mid ? 11 : 6));
+    el('line', { x1, y1, x2, y2, stroke: 'var(--ink)', 'stroke-width': major ? 1.6 : 1 }, scale);
+    if (major) { const [tx, ty] = pt(p, R - 34); const t = el('text', { x: tx, y: ty + 4, 'text-anchor': 'middle', fill: 'var(--ink-2)', 'font-family': 'B612 Mono, monospace', 'font-size': 13 }, scale); t.textContent = p; }
+  }
+  const bandG = document.getElementById('d-band');
+  const bands = list => { bandG.innerHTML = ''; list.forEach(([a, b, c]) => { const r = R - 9, [x1, y1] = pt(a, r), [x2, y2] = pt(b, r); el('path', { d: `M${x1} ${y1} A${r} ${r} 0 0 1 ${x2} ${y2}`, fill: 'none', stroke: c, 'stroke-width': 18 }, bandG); }); };
+  const needle = document.getElementById('d-needle');
+  const setNeedle = p => { needle.style.transform = `rotate(${rot(p)}deg)`; };
+  const big = document.getElementById('r-big'), setting = document.getElementById('r-setting'), bandTxt = document.getElementById('r-band');
+  const panel = document.getElementById('panel'), ghosts = document.getElementById('d-ghosts');
+  let timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  const readout = (v, label, band, cal) => { big.textContent = fmt(v); big.classList.toggle('cal', !!cal); setting.textContent = label; bandTxt.innerHTML = band || ''; };
+
+  // Santa Clara 2026, one complaint set throughout. 1: raw share flagged at cutoff 0.10 under each of 45 settings, lowest to highest,
+  // then the validated one; 2: validated setting, 8 cutoffs; 3: ScoreMix with the validated setting and its 95% interval.
+  const STEPS = [
+    { head: 'Santa Clara 2026 · only the setting changes', rl: 'across 45 settings', pace: 170,
+      frames: [{"v": 1.82, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · mean", "tag": ""}, {"v": 1.98, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.01, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · mean", "tag": ""}, {"v": 2.04, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · mean", "tag": ""}, {"v": 2.04, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.11, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.33, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.33, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · mean", "tag": ""}, {"v": 2.49, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · mean", "tag": ""}, {"v": 2.52, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 9.69, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · mean", "tag": ""}, {"v": 10.41, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · word-weighted mean", "tag": ""}, {"v": 10.95, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · mean", "tag": ""}, {"v": 11.7, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · word-weighted mean", "tag": ""}, {"v": 12.74, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · mean", "tag": ""}, {"v": 12.96, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · word-weighted mean", "tag": ""}, {"v": 13.4, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · softmax", "tag": ""}, {"v": 13.49, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · mean", "tag": ""}, {"v": 13.84, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · word-weighted mean", "tag": ""}, {"v": 15.07, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · softmax", "tag": ""}, {"v": 20.45, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · mean", "tag": ""}, {"v": 20.76, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · word-weighted mean", "tag": ""}, {"v": 24.6, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · softmax", "tag": ""}, {"v": 24.91, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · softmax", "tag": ""}, {"v": 28.15, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · softmax", "tag": ""}, {"v": 31.11, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · softmax", "tag": ""}, {"v": 38.44, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · mean", "tag": ""}, {"v": 39.41, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · word-weighted mean", "tag": ""}, {"v": 40.92, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · softmax", "tag": ""}, {"v": 41.74, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · mean", "tag": ""}, {"v": 42.65, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 43.44, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · softmax", "tag": ""}, {"v": 43.85, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · softmax", "tag": ""}, {"v": 52.75, "label": "Flagged as AI: 250-word windows, stride 0.60 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 54.48, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · mean", "tag": ""}, {"v": 55.3, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 65.71, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · softmax", "tag": ""}, {"v": 69.11, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · softmax", "tag": ""}, {"v": 72.22, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · softmax", "tag": ""}, {"v": 83.39, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · mean", "tag": ""}, {"v": 83.77, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 84.02, "label": "Flagged as AI: 250-word windows, stride 0.60 · any-AI probability · softmax", "tag": ""}, {"v": 84.71, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · softmax", "tag": ""}, {"v": 97.7, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · softmax", "tag": ""}, {"v": 52.09, "label": "Flagged as AI: setting validated on PhantomDocket, 250-word windows, stride 0.60 · any-AI probability · mean", "tag": "validated on PhantomDocket", "sel": true}],
+      text: `<p>A detector has to be set up before it measures anything: how long each scored section is, which score it reads, and how section scores combine into one score per document. Across 45 such settings, the same 2026 Santa Clara complaints are flagged as AI anywhere from 1.8% to 97.7%, depending only on the setting.</p><p>To choose one, we built PhantomDocket, a dataset of court filings where a judge caught hallucinated citations and suspects AI drafting. We choose the setting by how well it separates those filings from ones by the judge and opposing counsel in the same cases.</p>`,
+      fine: '45 settings: 5 window geometries × 3 window-level scores × 3 pooling rules. Flagged means a document score of at least 0.10, the same rule for every setting. No correction. The chosen setting is the one that best separates PhantomDocket hallucination filings from controls.', next: 'Use the validated setting →' },
+    { head: 'Santa Clara 2026 · only the cutoff changes', rl: 'across 8 cutoffs', pace: 650,
+      frames: [{"v": 52.09, "label": "Flagged at cutoff 0.1", "tag": "cutoff 0.1"}, {"v": 24.35, "label": "Flagged at cutoff 0.15", "tag": "cutoff 0.15"}, {"v": 13.81, "label": "Flagged at cutoff 0.2", "tag": "cutoff 0.2"}, {"v": 7.96, "label": "Flagged at cutoff 0.25", "tag": "cutoff 0.25"}, {"v": 4.28, "label": "Flagged at cutoff 0.3", "tag": "cutoff 0.3"}, {"v": 1.29, "label": "Flagged at cutoff 0.4", "tag": "cutoff 0.4"}, {"v": 0.47, "label": "Flagged at cutoff 0.5", "tag": "cutoff 0.5"}, {"v": 0.13, "label": "Flagged at cutoff 0.626842", "tag": "cutoff 0.626842"}],
+      text: `<p>The validated setting gives each complaint a score between 0 and 1. The usual next move is choosing a cutoff: call a complaint AI-assisted if its score clears it. Eight ordinary cutoffs, from 0.10 to 0.63, flag anywhere from 0.1% to 52% of the same complaints, depending only on where the line is drawn.</p><p>Correcting each cutoff for the detector's known error rates doesn't settle it. The corrected estimates still run from 4.4% to 49.0%.</p>`,
+      fine: 'Selected EditLens setting; cutoffs 0.10 to 0.626842 on the document score. Raw share of complaints above each cutoff, no correction.', next: 'Calibrate with ScoreMix →' },
+    { head: 'Santa Clara 2026 · validated setting, no cutoff', rl: '', pace: 0, band2: [34.4198075, 41.2480022],
+      frames: [{ v: 37.7627806, label: 'ScoreMix, setting validated on PhantomDocket', tag: 'ScoreMix', cal: true }],
+      text: `<p>Our method, ScoreMix, drops the cutoff. Instead of counting complaints above a line, it compares the whole distribution of scores with two references: the court's complaints from before AI drafting tools were publicly available, and filings with known AI use from our dataset, PhantomDocket. It estimates what share of this year's complaints look like the second.</p><p>With the validated setting, that share is 37.8% of 2026 Santa Clara complaints, with a 95% interval of 34.4% to 41.2%.</p>`,
+      fine: '95% interval 34.4–41.2% from 1,000 bootstrap draws. Across the other 44 settings, ScoreMix stays between 29.0% and 46.9%, against 1.8% to 97.7% for the raw flags in step 1.', next: null },
+  ];
+  function drawGhosts(seen, done) {
+    ghosts.innerHTML = '';
+    const cur = seen[seen.length - 1];
+    seen.slice(0, -1).forEach(f => { const [x1, y1] = pt(f.v, R - 30), [x2, y2] = pt(f.v, R - 2); el('line', { x1, y1, x2, y2, stroke: 'var(--ink-2)', 'stroke-width': 1.5, 'stroke-opacity': .7 }, ghosts); });
+    const label = (f, bold) => {
+      let [tx, ty] = pt(f.v, R + 12), anchor = tx < 200 ? 'end' : tx > 280 ? 'start' : 'middle';
+      if (f.v < 15) { tx = pt(f.v, R)[0]; ty = 258; anchor = 'start'; } else if (f.v > 85) { tx = pt(f.v, R)[0]; ty = 258; anchor = 'end'; }
+      const t = el('text', { x: tx, y: ty + 4, 'text-anchor': anchor, 'font-family': 'B612 Mono, monospace', 'font-size': 13, fill: bold ? 'var(--ink)' : 'var(--ink-2)', 'font-weight': bold ? 700 : 400 }, ghosts);
+      t.textContent = f.tag ? `${f.tag} → ${fmt(f.v)}` : fmt(f.v);
+    };
+    if (done) {
+      const vs = seen.filter(f => !f.cal);
+      if (vs.length) { label(vs.reduce((a, b) => b.v < a.v ? b : a), false); label(vs.reduce((a, b) => b.v > a.v ? b : a), false); }
+      if (cur.cal || cur.sel) label(cur, true);
+    } else if (cur.tag) label(cur, true);
+  }
+  function play(s) {
+    const st = STEPS[s]; clear(); bands([]); ghosts.innerHTML = '';
+    const seen = [], last = st.frames.length - 1;
+    const show = (f, i) => {
+      seen.push(f);
+      const vs = seen.filter(x => !x.cal).map(x => x.v), lo = Math.min(...vs), hi = Math.max(...vs);
+      setNeedle(f.v);
+      const b = hi > lo ? [[lo, hi, 'var(--band)']] : [];
+      if (f.cal && st.band2) b.push([st.band2[0], st.band2[1], 'var(--band-2)']);
+      bands(b);
+      drawGhosts(seen, i === last);
+      const n = seen.filter(x => !x.cal).length, tot = st.frames.filter(x => !x.cal).length;
+      // The range text is fixed for the step: the full spread across every setting or cutoff, shown from the start.
+      const all = st.frames.filter(x => !x.cal).map(x => x.v);
+      const band = f.cal ? '<b>34.4–41.2%</b>95% interval, shaded' : `<b>${fmt(Math.min(...all))}–${fmt(Math.max(...all))}</b>${st.rl}`;
+      readout(f.v, f.label, band, f.cal);
+    };
+    if (reduce) { st.frames.forEach((f, i) => show(f, i)); return; }
+    st.frames.forEach((f, i) => timers.push(setTimeout(() => show(f, i), i * st.pace + (f.sel ? 700 : 0))));
+  }
+  const stepBtns = document.querySelectorAll('.steps button');
+  function go(s) {
+    clear();
+    const st = STEPS[s];
+    stepBtns.forEach((b, i) => i === s ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current'));
+    const last = s === STEPS.length - 1;
+    panel.innerHTML = `<div class="ptext">${st.text}</div>${last ? '' : `<button type="button" class="pnext" aria-label="Next step: ${stepBtns[s + 1].querySelector('b').lastChild.textContent}">›</button>`}`;
+    if (!last) panel.querySelector('.pnext').addEventListener('click', () => go(s + 1));
+    play(s);
+  }
+  stepBtns.forEach((b, i) => b.addEventListener('click', () => go(i)));
+  // Keep the instrument the same height in every step: reserve room for the longest step text.
+  function lockPanel() {
+    const m = document.createElement('div');
+    m.className = 'panel'; m.setAttribute('aria-hidden', 'true');
+    m.style.cssText = `position:absolute;visibility:hidden;left:0;top:0;min-height:0;width:${panel.getBoundingClientRect().width}px`;
+    panel.parentNode.appendChild(m);
+    let h = 0;
+    STEPS.forEach(st => { m.innerHTML = `<div class="ptext">${st.text}</div><span class="pnext">›</span>`; h = Math.max(h, m.offsetHeight); });
+    m.remove(); panel.style.minHeight = h + 'px';
+  }
+  lockPanel(); addEventListener('resize', lockPanel); document.fonts && document.fonts.ready.then(lockPanel);
+  go(0);
+
+  /* ---------- Shared chart frame ---------- */
+  const X0 = 60, X1 = 790, Y0 = 260, Y1 = 20, yr = i => X0 + i * (X1 - X0) / 6;
+  function frame(svg, yv, ticks) {
+    svg.innerHTML = '';
+    ticks.forEach(v => { el('line', { x1: X0, x2: X1, y1: yv(v), y2: yv(v), stroke: 'var(--rule)', 'stroke-dasharray': v ? '2 4' : '' }, svg); const t = el('text', { x: X0 - 10, y: yv(v) + 4, 'text-anchor': 'end', 'font-size': 13, fill: 'var(--ink-2)' }, svg); t.textContent = v + '%'; });
+    for (let i = 0; i < 7; i++) { const t = el('text', { x: yr(i), y: Y0 + 24, 'text-anchor': 'middle', 'font-size': 13, fill: 'var(--ink-2)' }, svg); t.textContent = 2020 + i; }
+    const gx = yr(2) + (yr(3) - yr(2)) * (10.5 / 12);
+    el('line', { x1: gx, x2: gx, y1: Y1, y2: Y0, stroke: 'var(--ink-2)', 'stroke-dasharray': '3 3' }, svg);
+    const gt = el('text', { x: gx + 6, y: Y1 + 10, 'font-size': 13, fill: 'var(--ink-2)' }, svg); gt.textContent = 'ChatGPT';
+  }
+  const whisker = (svg, x, y0, y1, col) => { el('line', { x1: x, x2: x, y1: y0, y2: y1, stroke: col, 'stroke-width': 2, class: 'tl-end' }, svg); [y0, y1].forEach(y => el('line', { x1: x - 6, x2: x + 6, y1: y, y2: y, stroke: col, 'stroke-width': 2, class: 'tl-end' }, svg)); };
+
+  /* ---------- Courts ---------- */
+  const C = [
+    { k: 'sc', cis: [[0.0, 0.0], [0.0, 0.253], [0.0, 1.036], [0.675, 1.865], [4.411, 6.788], [14.556, 18.074], [34.42, 41.248]], name: 'Santa Clara', v: [0.0000005, 0.0705180, 0.4883464, 1.2213265, 5.5177828, 16.2065044, 37.7627806], ci: [34.4198075, 41.2480022], set: [29.01, 46.90], n: [2993, 2791, 3023, 3486, 4233, 4793, 3179] },
+    { k: 'sf', cis: [[0.0, 0.0], [0.0, 0.181], [0.004, 1.72], [0.44, 2.545], [2.063, 5.256], [15.291, 20.39], [31.456, 39.132]], name: 'San Francisco', v: [0.0000001, 0.0000021, 0.7849528, 1.3665241, 3.5284680, 17.7653036, 35.5806013], ci: [31.4564901, 39.1317861], set: [27.75, 42.44], n: [855, 2025, 2303, 1665, 1683, 3210, 2462] },
+    { k: 'tu', cis: [[0.0, 0.0], [0.0, 0.365], [0.0, 0.0], [0.099, 1.489], [1.262, 3.715], [8.507, 12.32], [14.422, 19.23]], name: 'Tulsa', v: [0.0000012, 0.1076425, 0.0000018, 0.7347886, 2.3769133, 10.2472648, 16.9362624], ci: [14.4219045, 19.2297577], set: [5.51, 19.67], n: [2404, 2275, 2198, 2354, 2627, 3173, 2304] },
+    { k: 'ok', cis: [[0.0, 0.215], [0.0, 0.255], [0.0, 0.373], [0.05, 1.55], [2.985, 5.377], [10.535, 13.752], [14.317, 18.137]], name: 'Oklahoma County', v: [0.0000033, 0.0000025, 0.0563917, 0.8147288, 4.0887750, 11.9920519, 16.1230033], ci: [14.3171573, 18.1371409], set: [6.65, 22.85], n: [3129, 2958, 2814, 3330, 3506, 3849, 3459] },
+  ];
+  const T = document.getElementById('trend'), yv = v => Y0 - v / 50 * (Y0 - Y1);
+  let sel = 'sc';
+  function drawTrend() {
+    frame(T, yv, [0, 10, 20, 30, 40, 50]);
+    // End labels: the selected court takes two lines (name, then value and interval) so it fits the frame.
+    const LH = 16, pos = {};
+    let bottom = -Infinity;
+    C.map(c => ({ c, y: yv(c.v[6]) + 4 - (c.k === sel ? LH / 2 : 0), h: c.k === sel ? 2 : 1 }))
+      .sort((a, b) => b.c.v[6] - a.c.v[6])
+      .forEach(o => { const y = Math.max(o.y, bottom + LH); pos[o.c.k] = y; bottom = y + (o.h - 1) * LH; });
+    C.filter(c => c.k !== sel).concat(C.filter(c => c.k === sel)).forEach(c => {
+      const on = c.k === sel, col = on ? 'var(--pointer)' : 'var(--ink)';
+      el('path', { d: c.v.map((v, i) => `${i ? 'L' : 'M'}${yr(i)} ${yv(v)}`).join(' '), fill: 'none', stroke: col, 'stroke-width': on ? 3 : 1.5, 'stroke-opacity': on ? 1 : .55, pathLength: 1, class: 'tl' }, T);
+      if (on) c.cis.forEach(([a, b], i) => { if (b - a > .3) whisker(T, yr(i), yv(a), yv(b), col); });
+      el('circle', { cx: yr(6), cy: yv(c.v[6]), r: on ? 5 : 3.5, fill: col, class: 'tl-end' }, T);
+      const ly = pos[c.k];
+      const t = el('text', { x: X1 + 18, y: ly, 'font-size': 13, fill: on ? 'var(--ink)' : 'var(--ink-2)', 'font-weight': on ? 700 : 400, class: 'tl-end clab', tabindex: 0, role: 'button', 'aria-pressed': on, 'aria-label': `Highlight ${c.name}` }, T);
+      if (on) {
+        el('tspan', { x: X1 + 18 }, t).textContent = c.name;
+        el('tspan', { x: X1 + 18, dy: LH, 'font-weight': 400 }, t).textContent = `${fmt(c.v[6])} (${fmt(c.ci[0])}–${fmt(c.ci[1])})`;
+      } else t.textContent = `${c.name} ${fmt(c.v[6])}`;
+      const pick = () => { if (sel !== c.k) { sel = c.k; T.classList.add('static'); drawTrend(); } };
+      t.addEventListener('click', pick); t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    });
+  }
+  drawTrend();
+
+  /* ---------- Case mix mosaic by year: shares of non-collections complaints, ScoreMix by issue family [value, lo, hi, reportable], and the decomposition (actual vs. 2020-22 mix) ---------- */
+  const MZD = {"sc":{"2023":{"sh":{"con":40.5,"pi":20.9,"emp":18.7,"hou":8.2,"bus":4.0,"oth":3.6,"ins":2.2,"civ":2.0},"e":{"bus":[5.1,0.0,11.1,true],"civ":[4.7,0.0,12.6,false],"con":[1.0,0.3,1.9,true],"emp":[0.9,0.0,2.3,true],"ins":[0.0,0.0,3.9,false],"oth":[0.0,0.0,1.3,true],"pi":[0.9,0.0,2.2,true],"hou":[2.2,0.0,5.3,true]},"act":1.2,"std":1.3,"mx":-0.0,"mxlo":-0.2,"mxhi":0.1},"2024":{"sh":{"con":40.2,"pi":23.7,"emp":19.7,"hou":5.3,"bus":3.8,"oth":3.4,"civ":2.4,"ins":1.6},"e":{"bus":[14.5,5.4,25.4,true],"civ":[4.8,0.0,13.1,true],"con":[1.4,0.5,2.3,true],"emp":[9.6,6.4,13.1,true],"ins":[8.2,1.9,16.8,false],"oth":[11.6,3.7,21.1,true],"pi":[6.0,4.0,8.4,true],"hou":[9.6,4.9,16.0,true]},"act":5.5,"std":5.8,"mx":-0.3,"mxlo":-0.8,"mxhi":0.1},"2025":{"sh":{"con":38.6,"pi":24.7,"emp":18.3,"hou":5.2,"bus":4.0,"civ":3.5,"oth":3.4,"ins":2.4},"e":{"bus":[35.1,25.4,45.3,true],"civ":[22.6,13.5,34.1,true],"con":[7.9,6.2,9.6,true],"emp":[33.3,27.6,38.6,true],"ins":[8.4,2.9,15.2,true],"oth":[20.8,13.1,29.0,true],"pi":[12.9,10.4,16.0,true],"hou":[22.7,15.1,30.6,true]},"act":16.2,"std":16.4,"mx":-0.1,"mxlo":-0.7,"mxhi":0.4},"2026":{"sh":{"con":30.0,"emp":26.0,"pi":25.6,"hou":6.1,"bus":5.1,"oth":3.7,"ins":1.8,"civ":1.7},"e":{"bus":[81.5,68.7,93.4,true],"civ":[51.7,31.6,73.2,false],"con":[15.8,12.3,19.3,true],"emp":[59.2,51.8,66.5,true],"ins":[14.3,4.1,25.8,false],"oth":[49.6,36.2,63.7,true],"pi":[26.1,21.4,30.7,true],"hou":[46.1,36.3,56.7,true]},"act":37.8,"std":32.8,"mx":4.9,"mxlo":3.6,"mxhi":6.4}},"sf":{"2023":{"sh":{"con":31.4,"pi":26.0,"oth":18.1,"hou":11.8,"emp":5.1,"bus":4.1,"civ":2.5,"ins":1.0,"pro":0.1},"e":{"bus":[0.0,0.0,12.1,false],"civ":null,"con":[1.7,0.0,3.5,true],"emp":[1.1,0.0,10.8,false],"ins":null,"oth":[0.0,0.0,0.0,true],"pi":[3.4,0.0,7.4,true],"pro":null,"hou":[1.3,0.0,5.8,true]},"act":1.4,"std":1.3,"mx":0.0,"mxlo":-0.4,"mxhi":0.3},"2024":{"sh":{"pi":32.7,"con":29.0,"oth":17.1,"hou":8.3,"emp":6.3,"bus":4.0,"civ":1.5,"ins":1.0,"pro":0.1},"e":{"bus":[30.8,13.3,51.3,false],"civ":null,"con":[0.5,0.0,1.6,true],"emp":[6.4,0.0,15.2,true],"ins":null,"oth":[4.4,1.3,8.1,true],"pi":[3.2,0.8,6.5,true],"pro":null,"hou":[0.0,0.0,7.0,true]},"act":3.5,"std":3.7,"mx":-0.2,"mxlo":-0.6,"mxhi":0.3},"2025":{"sh":{"pi":34.5,"con":23.9,"oth":19.2,"hou":8.4,"emp":6.8,"bus":4.0,"civ":1.8,"ins":1.3},"e":{"bus":[55.1,40.1,72.1,true],"civ":null,"con":[8.4,4.5,13.2,true],"emp":[56.2,43.6,70.4,true],"ins":null,"oth":[14.7,10.3,19.9,true],"pi":[12.6,9.4,15.9,true],"pro":null,"hou":[13.3,7.3,20.3,true]},"act":17.8,"std":16.6,"mx":1.2,"mxlo":0.3,"mxhi":2.2},"2026":{"sh":{"pi":32.3,"oth":22.7,"con":20.0,"hou":8.0,"emp":7.8,"bus":4.8,"civ":3.5,"ins":1.0},"e":{"bus":[83.4,67.8,97.4,true],"civ":null,"con":[21.1,15.4,27.4,true],"emp":[98.3,83.5,100.0,true],"ins":null,"oth":[22.9,17.1,29.7,true],"pi":[30.2,25.5,35.6,true],"pro":null,"hou":[27.0,17.1,37.5,true]},"act":35.6,"std":31.9,"mx":3.6,"mxlo":2.2,"mxhi":5.1}},"tu":{"2023":{"sh":{"pi":50.8,"con":36.4,"pro":4.5,"bus":3.0,"hou":1.9,"civ":1.1,"ins":1.0,"oth":0.8,"emp":0.6},"e":{"bus":[10.3,1.4,21.9,false],"civ":null,"con":[0.0,0.0,1.3,true],"emp":null,"ins":null,"oth":null,"pi":[0.5,0.0,1.6,true],"pro":[1.4,0.0,4.9,true],"hou":[0.0,0.0,0.0,false]},"act":0.7,"std":0.7,"mx":-0.0,"mxlo":-0.1,"mxhi":0.1},"2024":{"sh":{"pi":44.8,"con":43.8,"pro":3.4,"bus":2.6,"hou":2.2,"civ":0.9,"ins":0.9,"oth":0.9,"emp":0.5},"e":{"bus":[10.1,0.0,23.6,false],"civ":null,"con":[2.4,0.7,4.5,true],"emp":null,"ins":null,"oth":null,"pi":[2.7,1.2,4.9,true],"pro":[7.3,0.0,18.8,false],"hou":[0.0,0.0,0.0,false]},"act":2.4,"std":2.6,"mx":-0.2,"mxlo":-0.5,"mxhi":0.0},"2025":{"sh":{"con":47.4,"pi":42.9,"pro":2.5,"hou":2.2,"bus":1.9,"oth":1.5,"civ":0.8,"ins":0.5,"emp":0.3},"e":{"bus":[23.5,7.9,40.3,false],"civ":null,"con":[9.1,6.7,11.7,true],"emp":null,"ins":null,"oth":null,"pi":[11.5,8.8,14.4,true],"pro":[10.1,1.3,20.1,false],"hou":[8.0,0.0,17.9,false]},"act":10.2,"std":10.9,"mx":-0.6,"mxlo":-1.2,"mxhi":-0.1},"2026":{"sh":{"con":50.7,"pi":39.9,"pro":2.8,"bus":2.4,"hou":1.8,"ins":0.9,"civ":0.7,"oth":0.6,"emp":0.3},"e":{"bus":[50.2,31.9,67.8,false],"civ":null,"con":[8.5,6.1,11.1,true],"emp":null,"ins":null,"oth":null,"pi":[28.1,23.2,32.6,true],"pro":[27.6,12.9,42.9,false],"hou":[4.2,0.0,13.3,false]},"act":16.9,"std":20.7,"mx":-3.7,"mxlo":-4.9,"mxhi":-2.8}},"ok":{"2023":{"sh":{"pi":55.9,"con":27.7,"oth":5.6,"pro":3.5,"ins":2.2,"bus":2.2,"hou":1.9,"emp":0.8,"civ":0.3},"e":{"bus":[4.2,0.0,16.0,false],"civ":null,"con":[0.5,0.0,1.4,true],"emp":[4.9,0.0,23.5,false],"ins":null,"oth":[2.5,0.0,7.7,true],"pi":[1.2,0.0,2.3,true],"pro":[0.0,0.0,7.4,true],"hou":[0.0,0.0,7.7,false]},"act":0.8,"std":0.8,"mx":0.0,"mxlo":-0.1,"mxhi":0.1},"2024":{"sh":{"pi":50.5,"con":32.7,"oth":5.4,"ins":3.5,"pro":3.0,"bus":2.1,"hou":1.8,"emp":0.8,"civ":0.2},"e":{"bus":[1.1,0.0,11.4,false],"civ":null,"con":[5.1,2.8,7.4,true],"emp":[14.2,0.0,33.6,false],"ins":null,"oth":[12.0,4.8,19.8,true],"pi":[3.0,1.7,4.6,true],"pro":[3.4,0.0,9.7,true],"hou":[2.2,0.0,6.8,false]},"act":4.1,"std":4.0,"mx":0.1,"mxlo":-0.2,"mxhi":0.3},"2025":{"sh":{"pi":46.8,"con":36.4,"oth":5.4,"ins":4.0,"pro":2.7,"bus":2.0,"hou":1.4,"emp":1.0,"civ":0.2},"e":{"bus":[25.6,12.1,39.4,false],"civ":null,"con":[9.9,7.6,12.3,true],"emp":[31.6,13.7,50.4,false],"ins":null,"oth":[23.4,16.7,31.1,true],"pi":[12.3,9.9,14.6,true],"pro":[4.0,0.0,10.0,true],"hou":[3.4,0.0,12.2,false]},"act":12.0,"std":12.2,"mx":-0.2,"mxlo":-0.7,"mxhi":0.2},"2026":{"sh":{"con":39.1,"pi":38.1,"ins":13.7,"oth":3.4,"pro":2.3,"bus":1.6,"hou":0.9,"emp":0.4,"civ":0.3},"e":{"bus":[39.2,21.1,58.7,false],"civ":null,"con":[11.9,9.3,14.6,true],"emp":[25.0,0.0,52.7,false],"ins":null,"oth":[29.9,20.2,40.7,true],"pi":[21.4,17.9,25.1,true],"pro":[21.5,10.4,33.5,false],"hou":[11.5,0.0,28.4,false]},"act":16.1,"std":19.3,"mx":-3.2,"mxlo":-4.2,"mxhi":-2.2}}};
+  const MZT = [['emp', 'Employment', 'Emp.'], ['bus', 'Business & commercial', 'Bus.'], ['civ', 'Civil rights', 'Rights'], ['hou', 'Housing & property', 'Housing'], ['pi', 'Personal injury & tort', 'Injury'], ['ins', 'Insurance', 'Insur.'], ['con', 'Contract', 'Contract'], ['pro', 'Procedural & equitable', 'Proc.'], ['oth', 'Other', 'Other']];
+  const MZC = [['sc', 'SC', 'Santa Clara'], ['sf', 'SF', 'San Francisco'], ['tu', 'Tulsa', 'Tulsa'], ['ok', 'OKC', 'Oklahoma County']];
+  let mzY = 2026;
+  const shTxt = v => (v < 10 ? v.toFixed(1) : Math.round(v)) + '%';
+  const mzRead = document.getElementById('mz-read');
+  const mzIdle = 'Point at or tap a block for its numbers.';
+  const mzBox = document.getElementById('mz');
+  // Build each court's row once, with a block for every type that appears in any year; year changes then animate it.
+  const MZ_MS = 700;
+  function buildMZ() {
+    mzBox.innerHTML = MZC.map(([ck, ab, name]) => {
+      const fams = MZT.filter(([k]) => Object.values(MZD[ck]).some(d => d.sh[k] > 0));
+      const segs = fams.map(([k, , short]) => `<div class="mz-seg z" tabindex="-1" data-c="${ck}" data-k="${k}"><span>${short}<small></small></span><div class="bx"><i></i></div></div>`).join('');
+      return `<div class="mz-row" data-c="${ck}"><b title="${name}">${ab}<span class="mz-act"></span></b><div class="mz-bar">${segs}</div></div>`;
+    }).join('');
+    mzBox.querySelectorAll('.mz-seg').forEach(seg => {
+      seg.addEventListener('mouseenter', () => mzSay(seg)); seg.addEventListener('focus', () => mzSay(seg)); seg.addEventListener('click', () => mzSay(seg));
+    });
+  }
+  // Numbers count from the value on screen to the new year's value.
+  const mzShown = {};
+  function mzCount(el, key, to, show) {
+    const from = key in mzShown ? mzShown[key] : to; mzShown[key] = to;
+    if (reduce || from === to) { el.textContent = show(to); return; }
+    const t0 = performance.now();
+    const step = now => { const p = Math.min(1, (now - t0) / MZ_MS), q = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; el.textContent = show(from + (to - from) * q); if (p < 1 && mzShown[key] === to) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+    setTimeout(() => { if (mzShown[key] === to) el.textContent = show(to); }, MZ_MS + 30); // always land on the exact value
+  }
+  let mzFitT;
+  function drawMZ() {
+    mzBox.querySelectorAll('.mz-row').forEach(row => {
+      const ck = row.dataset.c, d = MZD[ck][mzY];
+      mzCount(row.querySelector('.mz-act'), ck, d.act, v => v.toFixed(1) + '%');
+      row.querySelectorAll('.mz-seg').forEach(seg => {
+        const k = seg.dataset.k, sh = d.sh[k] || 0, e = d.e[k], ok = sh > 0 && e != null && e[3];
+        seg.style.flexGrow = sh;
+        seg.classList.toggle('z', !sh); seg.tabIndex = sh ? 0 : -1;
+        seg.classList.toggle('na', !ok);
+        seg.querySelector('i').style.height = (ok ? e[0] : 0) + '%';
+        const sm = seg.querySelector('small');
+        if (ok) mzCount(sm, ck + k, e[0], v => Math.round(v) + '%'); else { sm.textContent = '–'; delete mzShown[ck + k]; }
+        if (!sh) seg.querySelector('span').style.visibility = 'hidden';
+      });
+    });
+    const on = mzBox.querySelector('.mz-seg.on:not(.z)');
+    mzSay(on || null);
+    clearTimeout(mzFitT); mzFitT = setTimeout(mzFit, reduce ? 0 : MZ_MS + 40);
+  }
+  const mzSay = seg => {
+    mzBox.querySelectorAll('.mz-seg.on').forEach(x => x.classList.remove('on'));
+    if (!seg) { mzRead.textContent = mzIdle; return; }
+    seg.classList.add('on');
+    const c = MZC.find(x => x[0] === seg.dataset.c), d = MZD[c[0]][mzY], k = seg.dataset.k, n = MZT.find(t => t[0] === k)[1], e = d.e[k];
+    mzRead.innerHTML = `${c[2]}, ${mzY} · <b>${n}</b>: ${shTxt(d.sh[k])} of complaints · ` + (e == null ? 'not reported: fewer than 100 complaints in 2020–22' : !e[3] ? 'not reported: fewer than 100 complaints that year' : `estimated <b>${e[0]}%</b> AI-assisted (95% interval ${e[1]}–${e[2]}%)`);
+  };
+  mzBox.addEventListener('mouseleave', () => mzSay(null));
+  const mzFit = () => mzBox.querySelectorAll('.mz-seg span').forEach(sp => { sp.style.visibility = ''; if (sp.scrollWidth > sp.clientWidth || sp.parentElement.clientWidth < 40) sp.style.visibility = 'hidden'; });
+  (() => {
+    const box = document.getElementById('mz-year');
+    box.innerHTML = [2023, 2024, 2025, 2026].map(y => `<button type="button" data-y="${y}">${y}</button>`).join('');
+    const sync = () => box.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.y === mzY));
+    box.addEventListener('click', e => { const b = e.target.closest('button'); if (b) { mzY = +b.dataset.y; sync(); drawMZ(); } });
+    sync();
+  })();
+  // First draw lands without animating; later year changes interpolate.
+  buildMZ(); mzBox.classList.add('still'); drawMZ(); mzFit(); requestAnimationFrame(() => requestAnimationFrame(() => mzBox.classList.remove('still')));
+  addEventListener('resize', mzFit); document.fonts && document.fonts.ready.then(mzFit);
+
+  /* ---------- Who files ---------- */
+  const WHO = [
+    { name: 'Self-represented', col: 'var(--pointer)', v: [0.0000003, 0.0000013, 2.3098807, 13.3774060, 18.7703083, 46.6516260, 71.5520162],
+      ci: { 0: [0.00000005, 0.5682623], 1: [0.0000002, 3.1925853], 2: [0.0000002, 6.9074216], 3: [6.7185930, 20.8126914], 4: [12.1299011, 26.4764408], 5: [39.4589480, 53.7691562], 6: [63.6372667, 79.1126232] },
+      n: [142, 132, 119, 159, 167, 290, 266] },
+    { name: 'With an attorney', col: 'var(--ink)', v: [0.0000004, 0.0716922, 0.4121282, 0.5735080, 4.7348714, 13.5536388, 33.5227195],
+      ci: { 0: [0.0000002, 0.0000012], 1: [0.0000006, 0.2537914], 2: [0.0000048, 0.9861019], 3: [0.1490068, 1.0577147], 4: [3.5963731, 5.9553239], 5: [11.8556151, 15.2309232], 6: [30.2554570, 36.9456406] },
+      n: [2850, 2659, 2903, 3327, 4066, 4502, 2913] },
+  ];
+  const W = document.getElementById('who'), wy = v => Y0 - v / 80 * (Y0 - Y1);
+  function drawWho() {
+    frame(W, wy, [0, 20, 40, 60, 80]);
+    WHO.forEach(g => {
+      el('path', { d: g.v.map((v, i) => `${i ? 'L' : 'M'}${yr(i)} ${wy(v)}`).join(' '), fill: 'none', stroke: g.col, 'stroke-width': 3, pathLength: 1, class: 'tl' }, W);
+      g.v.forEach((v, i) => {
+        const ex = g.ci[i];
+        if (ex) whisker(W, yr(i), wy(ex[0]), wy(ex[1]), g.col);
+        el('circle', { cx: yr(i), cy: wy(v), r: i === 6 ? 5 : 3.5, fill: g.col, class: 'tl-end' }, W);
+      });
+      const t = el('text', { x: X1 + 18, y: wy(g.v[6]) + 4, 'font-size': 13, fill: 'var(--ink)', 'font-weight': 700, class: 'tl-end' }, W); t.textContent = `${g.name} ${fmt(g.v[6])}`;
+    });
+  }
+  drawWho();
+
+  /* ---------- Where in a complaint (Table 3a, 2026) ---------- */
+  const SEC = {
+    caption: { name: 'Caption & parties', p: 46.2, ci: 1.4, w: 10.6, t: 'Names, court and case number. Mostly copied from forms and prior filings.' },
+    venue: { name: 'Jurisdiction & venue', p: 47.6, ci: 2.0, w: 4.6, t: 'Standard statements of why this court can hear the case. Close to no difference.' },
+    facts: { name: 'Statement of facts', p: 65.7, ci: 1.2, w: 33.2, t: 'The filer\'s own account of what happened. Narrative, free-form, and among the highest-scoring sections.' },
+    causes: { name: 'Causes of action', p: 68.9, ci: 1.4, w: 58.5, t: 'Legal claims argued in prose. The highest-scoring section.' },
+    prayer: { name: 'Prayer for relief', p: 47.2, ci: 1.3, w: 18.6, t: 'What the filer asks the court to award. Largely standard wording.' },
+    verif: { name: 'Verification & signature', p: 36.5, ci: 2.9, w: 7.4, t: 'Sworn boilerplate. Scores well below other sections.' },
+    attach: { name: 'Attachments & exhibits', p: 30.6, ci: 1.2, w: 55.1, t: 'Contracts, letters and notices, usually written by someone other than the filer. The lowest-scoring section.' },
+  };
+  const cdoc = document.getElementById('cdoc');
+  const csecs = [...cdoc.querySelectorAll('.csec')];
+  // Diverging heat: orange above 50 (scores higher than the rest), blue below; full strength at 20 points from even.
+  csecs.forEach(b => { const d = SEC[b.dataset.k]; b.style.setProperty('--heat', Math.min(1, Math.abs(d.p - 50) / 20) * .3); b.style.setProperty('--heat-c', d.p >= 50 ? 'var(--pointer)' : 'var(--cool)'); });
+  const wsc = document.getElementById('wsc'), wx = p => (p - 25) / 50 * 100;
+  const wdot = document.createElement('span'); wdot.className = 'dot'; wsc.appendChild(wdot);
+  function pickSec(k) {
+    const d = SEC[k], side = d.p > 50 ? 1 : -1, sl = Math.abs(d.p - 50) < 5 ? 'slightly ' : '';
+    csecs.forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
+    document.getElementById('w-name').textContent = d.name;
+    const v = document.getElementById('w-val');
+    v.textContent = `Scores ${sl}${side > 0 ? 'higher' : 'lower'} than the rest`;
+    v.className = 'w-big ' + (side > 0 ? 'hi' : 'lo');
+    wdot.style.left = wx(d.p) + '%'; wdot.style.background = d.p >= 50 ? 'var(--pointer)' : 'var(--cool)';
+    document.getElementById('w-ci').innerHTML = `Outscores the rest <b>${d.p} times in 100</b> (± ${d.ci})`;
+    document.getElementById('w-text').textContent = d.t;
+  }
+  csecs.forEach(b => b.addEventListener('click', () => pickSec(b.dataset.k)));
+  // Keep the panel steady: size the headline and note to the tallest option at the current width.
+  let wCur = 'causes';
+  function lockW() {
+    const v = document.getElementById('w-val'), t = document.getElementById('w-text');
+    v.style.minHeight = t.style.minHeight = '';
+    let hv = 0, ht = 0;
+    Object.keys(SEC).forEach(k => { pickSec(k); hv = Math.max(hv, v.offsetHeight); ht = Math.max(ht, t.offsetHeight); });
+    v.style.minHeight = hv + 'px'; t.style.minHeight = ht + 'px';
+    pickSec(wCur);
+  }
+  csecs.forEach(b => b.addEventListener('click', () => { wCur = b.dataset.k; }));
+  pickSec('causes'); lockW(); addEventListener('resize', lockW); document.fonts && document.fonts.ready.then(lockW);
+  const cn = cdoc.querySelector('.cnums');
+  function numberLines() { const lh = parseFloat(getComputedStyle(cdoc).getPropertyValue('--plh')) || 28; const top = window.innerWidth <= 520 ? 24 : 36; const h = cdoc.querySelector('.pfoot').offsetTop - top; cn.innerHTML = Array.from({ length: Math.max(1, Math.floor(h / lh)) }, (_, i) => `<span>${i + 1}</span>`).join(''); }
+  numberLines(); addEventListener('resize', numberLines);
+  const slipEl = document.querySelector('.slip'), slipNums = slipEl && slipEl.querySelector('.cnums');
+  function numberSlip() { if (!slipNums) return; const lh = parseFloat(getComputedStyle(slipEl).getPropertyValue('--plh')) || 28; const n = Math.max(1, Math.round(document.getElementById('bp-text').offsetHeight / lh)); slipNums.innerHTML = Array.from({ length: n }, (_, i) => `<span>${i + 1}</span>`).join(''); }
+  numberSlip(); addEventListener('resize', numberSlip); document.fonts && document.fonts.ready.then(numberSlip); document.fonts && document.fonts.ready.then(numberLines);
+
+  /* ---------- Time series draw in on first view (already complete at rest) ---------- */
+  if ('IntersectionObserver' in window && !reduce) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; io.unobserve(e.target); e.target === T ? drawTrend() : drawWho(); }), { threshold: .35 });
+    [T, W].forEach(svg => { if (svg.getBoundingClientRect().top > innerHeight) io.observe(svg); });
+  }
+
+  /* ---------- PhantomDocket funnel (case level; final step also gives filings) ---------- */
+  (() => {
+    const svg = document.getElementById('pdflow');
+    const S = [
+      { n: 1848, l: ['Charlotin', 'database'] },
+      { n: 1279, l: ['U.S. cases'], loss: 'outside the U.S.' },
+      { n: 1164, l: ['docket', 'found'], loss: 'no docket found' },
+      { n: 928, l: ['on CourtLink or', 'Bloomberg Law'], m: 'on CourtLink/Bloomberg', loss: 'not in databases' },
+      { n: 679, l: ['filing named', 'in the docket'], m: 'filing named in docket', loss: 'no filing entry' },
+      { n: 619, l: ['retrieved cases'], loss: 'could not retrieve', end: true },
+    ];
+    const f = n => n.toLocaleString('en-US');
+    const P = (d, a) => el('path', Object.assign({ d }, a), svg);
+    // Animation hooks: a class and a delay per element; they only play while the svg has .go (first view).
+    const A = (e, cls, t) => { e.classList.add(cls); e.style.animationDelay = t.toFixed(2) + 's'; return e; };
+    const ST = .42;
+    const T = (x, y, t, a) => { const e = el('text', Object.assign({ x, y, 'font-size': 13, fill: 'var(--ink-2)' }, a), svg); e.textContent = t; return e; };
+    function draw() {
+      svg.innerHTML = '';
+      const W = svg.parentElement.clientWidth, wide = W >= 900;
+      if (wide) {
+        const H = 230, top = 52, k = 86 / S[0].n, gap = (W - 150) / (S.length - 1);
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const x = i => i * gap, h = i => S[i].n * k;
+        for (let i = 0; i < S.length - 1; i++) {
+          A(P(`M${x(i)},${top} H${x(i + 1)} V${top + h(i + 1)} H${x(i)} Z`, { fill: S[i + 1].end ? 'var(--band-2)' : 'var(--rule)' }), 'sk-gx', i * ST + .05);
+          const L = h(i) - h(i + 1), yc = top + h(i + 1) + L / 2, xe = x(i) + 34, ye = H - 34;
+          A(P(`M${x(i)},${yc} C${x(i) + 26},${yc} ${xe},${yc + 10} ${xe},${Math.max(yc + 18, ye - 6)} V${ye}`, { fill: 'none', stroke: 'var(--track)', 'stroke-width': Math.max(L, 1.5), pathLength: 1 }), 'sk-dr', i * ST + .15);
+          A(T(xe + Math.max(L, 2) / 2 + 6, ye - 2, f(S[i].n - S[i + 1].n), { fill: 'var(--ink)' }), 'sk-f', i * ST + .55);
+          A(T(xe + Math.max(L, 2) / 2 + 6, ye + 14, S[i + 1].loss), 'sk-f', i * ST + .55);
+        }
+        S.forEach((s, i) => {
+          A(el('line', { x1: x(i), x2: x(i), y1: top, y2: top + h(i), stroke: 'var(--ink)', 'stroke-width': 1.5 }, svg), 'sk-f', i * ST);
+          A(T(x(i) + 6, top - 10, f(s.n), { fill: s.end ? 'var(--pointer)' : 'var(--ink)', 'font-weight': 700 }), 'sk-f', i * ST);
+          s.l.forEach((t, j) => A(T(x(i) + 6, top - 42 + j * 15, t), 'sk-f', i * ST));
+        });
+        const xl = x(S.length - 1) + 14;
+        A(T(xl, top + 18, '980 filings total', { fill: 'var(--pointer)', 'font-weight': 700 }), 'sk-f', (S.length - 1) * ST + .2);
+      } else {
+        const k = 72 / S[0].n, row = 54, top = 6, bx = 108, lx = bx + 12, H = top + row * (S.length - 1) + 30;
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+        const y = i => top + i * row, w = i => S[i].n * k;
+        for (let i = 0; i < S.length - 1; i++) {
+          A(P(`M${bx},${y(i)} V${y(i + 1)} H${bx - w(i + 1)} V${y(i)} Z`, { fill: S[i + 1].end ? 'var(--band-2)' : 'var(--rule)' }), 'sk-gy', i * ST + .05);
+          const L = w(i) - w(i + 1), xc = bx - w(i + 1) - L / 2, ym = y(i) + 30;
+          A(P(`M${xc},${y(i)} C${xc},${ym - 14} ${xc - 6},${ym} ${xc - 24},${ym} H${xc - 40}`, { fill: 'none', stroke: 'var(--track)', 'stroke-width': Math.max(L, 1.5), pathLength: 1 }), 'sk-dr', i * ST + .15);
+        }
+        S.forEach((s, i) => {
+          A(el('line', { x1: bx - w(i), x2: bx, y1: y(i), y2: y(i), stroke: 'var(--ink)', 'stroke-width': 1.5 }, svg), 'sk-f', i * ST);
+          const t = A(T(lx, y(i) + 4, '', {}), 'sk-f', i * ST); t.innerHTML = `<tspan font-weight="700" fill="${s.end ? 'var(--pointer)' : 'var(--ink)'}">${f(s.n)}</tspan> ${s.m || s.l.join(' ')}`;
+        });
+        const yl = y(S.length - 1) + 22;
+        const t = A(T(lx, yl, '', {}), 'sk-f', (S.length - 1) * ST + .2); t.innerHTML = '<tspan font-weight="700" fill="var(--pointer)">980 filings total</tspan>';
+      }
+    }
+    draw(); addEventListener('resize', () => { svg.classList.remove('go'); draw(); });
+    if ('IntersectionObserver' in window && !reduce && svg.getBoundingClientRect().top > innerHeight * .8) {
+      const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); svg.classList.add('go'); } }, { threshold: .4 });
+      io.observe(svg);
+    }
+  })();
+
+  /* ---------- Team: hover or focus a photo for name and post ---------- */
+  (() => {
+    const crew = document.getElementById('crew'), read = document.getElementById('crew-read');
+    const idle = matchMedia('(hover: hover)').matches ? 'Point at a photo to see who it is; click to visit their site.' : 'Tap a photo to visit their site.';
+    const say = a => { crew.querySelectorAll('a.on').forEach(x => x.classList.remove('on')); if (!a) { read.textContent = idle; return; } a.classList.add('on'); read.innerHTML = ''; const b = document.createElement('b'); b.textContent = a.dataset.name; read.append(b, a.dataset.role); };
+    crew.querySelectorAll('a').forEach(a => { a.addEventListener('mouseenter', () => say(a)); a.addEventListener('focus', () => say(a)); a.addEventListener('blur', () => say(null)); });
+    crew.addEventListener('mouseleave', () => say(null));
+    say(null);
+  })();
+
+  /* ---------- Boilerplate excerpt: pasted chunks vs typed words ---------- */
+  (() => {
+    const p = document.getElementById('bp-text'), slip = p && p.closest('.slip');
+    if (!p || reduce || !('IntersectionObserver' in window)) return;
+    // Split the filer's own text into per-character spans; boilerplate spans stay whole.
+    [...p.childNodes].forEach(n => {
+      if (n.nodeType !== 3) return;
+      const f = document.createDocumentFragment();
+      [...n.textContent].forEach(c => { const s = document.createElement('span'); s.className = 'ch'; s.textContent = c; f.appendChild(s); });
+      p.replaceChild(f, n);
+    });
+    const units = [...p.children];
+    const caret = document.createElement('span'); caret.className = 'caret'; caret.setAttribute('aria-hidden', 'true');
+    let timers = [], running = false;
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    function play() {
+      timers.forEach(clearTimeout); timers = []; running = true;
+      p.classList.add('anim'); units.forEach(u => u.classList.remove('on', 'flash'));
+      p.insertBefore(caret, units[0]);
+      let t = 250;
+      units.forEach((u, i) => {
+        if (u.classList.contains('bp')) {
+          t += i ? 650 : 350; // pause before each paste, as if reaching for it
+          at(t, () => { u.classList.add('on', 'flash'); u.after(caret); setTimeout(() => u.classList.remove('flash'), 80); });
+          t += 420;
+        } else {
+          at(t, () => { u.classList.add('on'); u.after(caret); });
+          t += u.textContent === ' ' ? 34 : 21;
+        }
+      });
+      at(t + 900, () => { caret.remove(); p.classList.remove('anim'); running = false; });
+    }
+    const io = new IntersectionObserver(es => { if (es[0].isIntersecting) { io.disconnect(); play(); } }, { threshold: .6 });
+    io.observe(p);
+    if (slip) { slip.classList.add('replay'); slip.title = 'Click to replay'; slip.addEventListener('click', () => { if (!running) play(); }); }
+  })();
+
+  /* ---------- Copy BibTeX: click the citation itself ---------- */
+  (() => {
+    const box = document.getElementById('citeBox'), bib = document.getElementById('bib'), hint = document.getElementById('cite-hint');
+    let t;
+    const flash = msg => { hint.textContent = msg; clearTimeout(t); t = setTimeout(() => hint.textContent = 'Click to copy', 1800); };
+    const selectAll = () => { const r = document.createRange(); r.selectNodeContents(bib); const s = getSelection(); s.removeAllRanges(); s.addRange(r); flash('Selected: press ⌘C or Ctrl+C'); };
+    const copy = () => {
+      // Leave a reader's own partial selection alone
+      const s = getSelection(); if (s && !s.isCollapsed && box.contains(s.anchorNode) && s.toString() !== bib.textContent) return;
+      try { navigator.clipboard.writeText(bib.textContent).then(() => flash('Copied'), selectAll); } catch (e) { selectAll(); }
+    };
+    box.addEventListener('click', copy);
+    box.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copy(); } });
+  })();
+})();
+</script>
+
+<div id="devpal" aria-label="Palette (dev)"><label for="devpal-s">Palette</label><select id="devpal-s">
+  <option value="">Sage &amp; ember (current)</option>
+  <option value="cardinal">Cardinal &amp; green</option>
+  <option value="cobalt">Fog &amp; cobalt</option>
+  <option value="manila">Manila &amp; teal</option>
+  <option value="plum">Mauve &amp; plum</option>
+  <option value="night">Night &amp; amber (dark)</option>
+</select></div>
+<script>(()=>{const sel=document.getElementById('devpal-s'),root=document.documentElement;
+const set=v=>{v?root.dataset.pal=v:delete root.dataset.pal;try{localStorage.setItem('devpal',v)}catch(e){}};
+let v='';try{v=localStorage.getItem('devpal')||''}catch(e){}
+if(v&&[...sel.options].some(o=>o.value===v)){sel.value=v;set(v)}else if(root.dataset.pal)sel.value=root.dataset.pal;
+sel.addEventListener('change',()=>set(sel.value));})();</script>
+</body></html>

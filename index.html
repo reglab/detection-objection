@@ -96,6 +96,10 @@ h1 { font: var(--t-display); letter-spacing: -.02em; text-wrap: balance; }
 .authors { font: var(--t-label); color: var(--ink-2); }
 .authors b { color: var(--ink); font-weight: 400; }
 .ctas { display: flex; gap: 8px; flex-wrap: wrap; }
+.news { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: -10px; }
+.news-l { font: var(--t-label); color: var(--ink-2); margin-right: 4px; }
+.btn.press { font-weight: 400; padding: 6px 12px; border-width: 1px; border-color: var(--ink-2); }
+.btn.press:hover { border-color: var(--ink); }
 .btn { display: inline-flex; align-items: center; font: var(--t-label); font-weight: 700; padding: 10px 16px; border: 1.5px solid var(--ink); border-radius: 2px; text-decoration: none; }
 
 .inst { position: relative; background: var(--card); border: 1.5px solid var(--ink); display: grid; min-width: 0; box-shadow: 0 14px 34px -18px rgba(0,0,0,.35); }
@@ -415,6 +419,9 @@ footer b { color: var(--ink); }
             <a class="btn" href="https://dho.stanford.edu/wp-content/uploads/GenAI_Courts.pdf" target="_blank" rel="noopener">Paper</a>
             <a class="btn" href="https://huggingface.co/datasets/Arifov/PhantomDocket" target="_blank" rel="noopener">PhantomDocket data</a>
             <a class="btn" href="https://hai.stanford.edu/news/ai-might-be-flooding-state-court-houses-but-proving-it-is-another-matter" target="_blank" rel="noopener">HAI Blog</a>
+          </div>
+          <div class="news"><span class="news-l">In the news</span>
+            <a class="btn press" href="https://www.kqed.org/news/12110636/ai-is-drafting-more-bay-area-lawsuits-especially-for-people-without-lawyers" target="_blank" rel="noopener">KQED</a>
           </div>
         </div>
       </div>

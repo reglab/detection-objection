@@ -292,10 +292,10 @@ h3 { font: var(--t-sub); }
 .pd-intro .block { margin-top: 0; }
 .pd-ghost { width: 132px; height: auto; justify-self: center; overflow: visible; }
 /* Ghost: the gavel taps (pivot at the hand, 51.54,36.5 in user units; view-box origin is 5,7) and the eyes blink */
-.pd-ghost .gv { transform-box: view-box; transform-origin: 46.54px 29.5px; animation: gavel 3.6s ease-in-out infinite; }
-.pd-ghost .eyes ellipse { transform-box: fill-box; transform-origin: center; animation: blink 4.8s infinite; }
-@keyframes gavel { 0%, 55%, 100% { transform: rotate(0); } 64% { transform: rotate(-14deg); } 72% { transform: rotate(22deg); } 76% { transform: rotate(16deg); } 80% { transform: rotate(22deg); } 90% { transform: rotate(0); } }
-@keyframes blink { 0%, 90%, 96%, 100% { transform: scaleY(1); } 93% { transform: scaleY(.1); } }
+.pd-ghost .gv { transform-box: view-box; transform-origin: 46.54px 29.5px; animation: gavel 5.4s ease-in-out infinite; }
+.pd-ghost .eyes ellipse { transform-box: fill-box; transform-origin: center; animation: blink 7.2s infinite; }
+@keyframes gavel { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-14deg); } 81.3% { transform: rotate(22deg); } 84% { transform: rotate(16deg); } 86.7% { transform: rotate(22deg); } 93.3% { transform: rotate(0); } }
+@keyframes blink { 0%, 93.3%, 97.3%, 100% { transform: scaleY(1); } 95.3% { transform: scaleY(.1); } }
 .pdf svg { overflow: visible; }
 .pdf { margin-top: 28px; }
 

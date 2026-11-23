@@ -189,8 +189,8 @@ h3 { font: var(--t-sub); }
 .rgv .bar b { white-space: nowrap; }
 .scale-note.rgv { padding-left: calc(14em + 12px); }
 .bar .t i.loss { left: calc(var(--lo) * 1%); background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 5px); }
-.lossb .bar { grid-template-columns: 8.5em minmax(0, 1fr) 7.4em; } .lossb .bar b { white-space: nowrap; }
-.bar b .was { color: var(--ink-2); margin-left: .7em; } /* grey: the value before the striped loss */
+.lossb .bar { grid-template-columns: 8.5em minmax(0, 1fr) 9.6em; } .lossb .bar b { white-space: nowrap; }
+.bar b .was { color: var(--ink-2); } /* grey: the value before the striped loss */
 .scale-note { display: flex; justify-content: space-between; font: var(--t-mono); color: var(--ink-2); padding-left: calc(11em + 12px); padding-right: calc(4.6em + 12px); }
 
 /* Case mix mosaic: width = share of a court's complaints in the selected year, orange height = ScoreMix estimate for that type */
@@ -382,7 +382,7 @@ footer b { color: var(--ink); }
   .bar { grid-template-columns: 8.5em minmax(0, 1fr) 4.4em; gap: 8px; }
   .scale-note { padding-left: calc(8.5em + 8px); padding-right: calc(4.4em + 8px); }
   .rgv .bar { grid-template-columns: 10em minmax(0, 1fr) 4.4em; }
-  .lossb .bar { grid-template-columns: 7.5em minmax(0, 1fr) 7em; }
+  .lossb .bar { grid-template-columns: 7.5em minmax(0, 1fr) 9.2em; }
   .scale-note.rgv { padding-left: calc(10em + 8px); }
   .mz-row > b { grid-column: 1; grid-row: 1; }
   .mz-bar { grid-column: 1 / -1; grid-row: 2; }
@@ -430,10 +430,12 @@ footer b { color: var(--ink); }
           <div class="ctas">
             <a class="btn" href="https://dho.stanford.edu/wp-content/uploads/GenAI_Courts.pdf" target="_blank" rel="noopener">Paper</a>
             <a class="btn" href="https://huggingface.co/datasets/Arifov/PhantomDocket" target="_blank" rel="noopener">PhantomDocket data</a>
-            <a class="btn" href="https://hai.stanford.edu/news/ai-might-be-flooding-state-court-houses-but-proving-it-is-another-matter" target="_blank" rel="noopener">HAI Blog</a>
+            <a class="btn" href="https://hai.stanford.edu/news/ai-might-be-flooding-state-court-houses-but-proving-it-is-another-matter" target="_blank" rel="noopener">HAI blog</a>
           </div>
           <div class="news"><span class="news-l">In the news</span>
             <a class="btn press" href="https://www.kqed.org/news/12110636/ai-is-drafting-more-bay-area-lawsuits-especially-for-people-without-lawyers" target="_blank" rel="noopener">KQED</a>
+            <a class="btn press" href="https://www.abajournal.com/news/article/new-research-from-stanford-shows-more-people-are-using-ai-in-court-filings" target="_blank" rel="noopener">ABA Journal</a>
+            <a class="btn press" href="https://www.law360.com/pulse/courts/articles/2551873" target="_blank" rel="noopener">Law360</a>
           </div>
         </div>
       </div>
@@ -566,8 +568,8 @@ footer b { color: var(--ink); }
         <figure class="fig">
           <span class="fig-t">Classification of synthetic AI drafts vs. human writing (AUROC)</span>
           <div class="bars lossb">
-            <div class="bar"><span>Court petitions</span><span class="t"><i style="--v:77"></i><i class="loss" style="--lo:77;--v:16"></i></span><b>0.77<span class="was">0.93</span></b></div>
-            <div class="bar"><span>Press releases</span><span class="t"><i style="--v:83"></i><i class="loss" style="--lo:83;--v:10"></i></span><b>0.83<span class="was">0.93</span></b></div>
+            <div class="bar"><span>Court petitions</span><span class="t"><i style="--v:77"></i><i class="loss" style="--lo:77;--v:16"></i></span><b>0.77<span class="was">, was 0.93</span></b></div>
+            <div class="bar"><span>Press releases</span><span class="t"><i style="--v:83"></i><i class="loss" style="--lo:83;--v:10"></i></span><b>0.83<span class="was">, was 0.93</span></b></div>
           </div>
           <p class="cap">Striped: what the detector loses when the AI is told to write like a lawyer.</p>
         </figure>
@@ -582,9 +584,9 @@ footer b { color: var(--ink); }
         <figure class="fig">
           <span class="fig-t">Share of AI text caught</span>
           <div class="bars lossb">
-            <div class="bar"><span>Llama-3.1-8B</span><span class="t"><i style="--v:55"></i><i class="loss" style="--lo:55;--v:35"></i></span><b>55%<span class="was">90%</span></b></div>
-            <div class="bar"><span>Mistral-7B</span><span class="t"><i style="--v:59"></i><i class="loss" style="--lo:59;--v:31"></i></span><b>59%<span class="was">90%</span></b></div>
-            <div class="bar"><span>Qwen3-8B</span><span class="t"><i style="--v:37"></i><i class="loss" style="--lo:37;--v:53"></i></span><b>37%<span class="was">90%</span></b></div>
+            <div class="bar"><span>Llama-3.1-8B</span><span class="t"><i style="--v:55"></i><i class="loss" style="--lo:55;--v:35"></i></span><b>55%<span class="was">, was 90%</span></b></div>
+            <div class="bar"><span>Mistral-7B</span><span class="t"><i style="--v:59"></i><i class="loss" style="--lo:59;--v:31"></i></span><b>59%<span class="was">, was 90%</span></b></div>
+            <div class="bar"><span>Qwen3-8B</span><span class="t"><i style="--v:37"></i><i class="loss" style="--lo:37;--v:53"></i></span><b>37%<span class="was">, was 90%</span></b></div>
           </div>
           <p class="cap">Striped: caught on AI rewrites, missed on AI answers.</p>
         </figure>
@@ -610,7 +612,7 @@ footer b { color: var(--ink); }
       </figure>
 
       <div class="block">
-        <p class="lede">PhantomDocket is also how we chose the instrument. For comparison, we used filings by the judge and opposing counsel in the same cases. We compared detectors on how well they told the two groups apart. Then we searched EditLens's settings: how long each window is, which score it reads, and how window scores combine. We kept the setting that best separated them on filings held out from the search. That is the setting on the dial at the top of this page.</p>
+        <p class="lede">PhantomDocket is also how we chose the instrument. For comparison, we used filings by the judge and opposing counsel in the same cases. We compared detectors on how well they told the two groups apart. Then we searched EditLens's settings: how long each scored passage is, which score it reads, and how passage scores combine. We kept the setting that best separated them on filings held out from the search. That is the setting on the dial at the top of this page.</p>
       </div>
 
       <div class="block two">
@@ -756,7 +758,7 @@ footer b { color: var(--ink); }
   const STEPS = [
     { head: 'Santa Clara 2026 · only the setting changes', rl: 'across 45 settings', pace: 170,
       frames: [{"v": 1.82, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · mean", "tag": ""}, {"v": 1.98, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.01, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · mean", "tag": ""}, {"v": 2.04, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · mean", "tag": ""}, {"v": 2.04, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.11, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.33, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 2.33, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · mean", "tag": ""}, {"v": 2.49, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · mean", "tag": ""}, {"v": 2.52, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · word-weighted mean", "tag": ""}, {"v": 9.69, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · mean", "tag": ""}, {"v": 10.41, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · word-weighted mean", "tag": ""}, {"v": 10.95, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · mean", "tag": ""}, {"v": 11.7, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · word-weighted mean", "tag": ""}, {"v": 12.74, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · mean", "tag": ""}, {"v": 12.96, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · word-weighted mean", "tag": ""}, {"v": 13.4, "label": "Flagged as AI: 400-word windows, no overlap · most likely bucket · softmax", "tag": ""}, {"v": 13.49, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · mean", "tag": ""}, {"v": 13.84, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · word-weighted mean", "tag": ""}, {"v": 15.07, "label": "Flagged as AI: 375-word windows, stride 0.90 · most likely bucket · softmax", "tag": ""}, {"v": 20.45, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · mean", "tag": ""}, {"v": 20.76, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · word-weighted mean", "tag": ""}, {"v": 24.6, "label": "Flagged as AI: 225-word windows, stride 0.70 · most likely bucket · softmax", "tag": ""}, {"v": 24.91, "label": "Flagged as AI: 250-word windows, stride 0.60 · most likely bucket · softmax", "tag": ""}, {"v": 28.15, "label": "Flagged as AI: 400-word windows, no overlap · expected bucket · softmax", "tag": ""}, {"v": 31.11, "label": "Flagged as AI: 375-word windows, stride 0.90 · expected bucket · softmax", "tag": ""}, {"v": 38.44, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · mean", "tag": ""}, {"v": 39.41, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · word-weighted mean", "tag": ""}, {"v": 40.92, "label": "Flagged as AI: 250-word windows, stride 0.60 · expected bucket · softmax", "tag": ""}, {"v": 41.74, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · mean", "tag": ""}, {"v": 42.65, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 43.44, "label": "Flagged as AI: 225-word windows, stride 0.70 · expected bucket · softmax", "tag": ""}, {"v": 43.85, "label": "Flagged as AI: 100-word windows, stride 0.75 · most likely bucket · softmax", "tag": ""}, {"v": 52.75, "label": "Flagged as AI: 250-word windows, stride 0.60 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 54.48, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · mean", "tag": ""}, {"v": 55.3, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 65.71, "label": "Flagged as AI: 400-word windows, no overlap · any-AI probability · softmax", "tag": ""}, {"v": 69.11, "label": "Flagged as AI: 375-word windows, stride 0.90 · any-AI probability · softmax", "tag": ""}, {"v": 72.22, "label": "Flagged as AI: 100-word windows, stride 0.75 · expected bucket · softmax", "tag": ""}, {"v": 83.39, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · mean", "tag": ""}, {"v": 83.77, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · word-weighted mean", "tag": ""}, {"v": 84.02, "label": "Flagged as AI: 250-word windows, stride 0.60 · any-AI probability · softmax", "tag": ""}, {"v": 84.71, "label": "Flagged as AI: 225-word windows, stride 0.70 · any-AI probability · softmax", "tag": ""}, {"v": 97.7, "label": "Flagged as AI: 100-word windows, stride 0.75 · any-AI probability · softmax", "tag": ""}, {"v": 52.09, "label": "Flagged as AI: setting validated on PhantomDocket, 250-word windows, stride 0.60 · any-AI probability · mean", "tag": "validated on PhantomDocket", "sel": true}],
-      text: `<p>A detector has to be set up before it measures anything: how long each scored section is, which score it reads, and how section scores combine into one score per document. Across 45 such settings, the same 2026 Santa Clara complaints are flagged as AI anywhere from 1.8% to 97.7%, depending only on the setting.</p><p>To choose one, we built PhantomDocket, a dataset of court filings where a judge caught hallucinated citations and suspects AI drafting. We choose the setting by how well it separates those filings from ones by the judge and opposing counsel in the same cases.</p>`,
+      text: `<p>A detector has to be set up before it measures anything: how long each scored passage is, which score it reads, and how passage scores combine into one score per document. Across 45 such settings, the same 2026 Santa Clara complaints are flagged as AI anywhere from 1.8% to 97.7%, depending only on the setting.</p><p>To choose one, we built PhantomDocket, a dataset of court filings where a judge caught hallucinated citations and suspected AI drafting. We choose the setting by how well it separates those filings from ones by the judge and opposing counsel in the same cases.</p>`,
       fine: '45 settings: 5 window geometries × 3 window-level scores × 3 pooling rules. Flagged means a document score of at least 0.10, the same rule for every setting. No correction. The chosen setting is the one that best separates PhantomDocket hallucination filings from controls.', next: 'Use the validated setting →' },
     { head: 'Santa Clara 2026 · only the cutoff changes', rl: 'across 8 cutoffs', pace: 650,
       frames: [{"v": 52.09, "label": "Flagged at cutoff 0.1", "tag": "cutoff 0.1"}, {"v": 24.35, "label": "Flagged at cutoff 0.15", "tag": "cutoff 0.15"}, {"v": 13.81, "label": "Flagged at cutoff 0.2", "tag": "cutoff 0.2"}, {"v": 7.96, "label": "Flagged at cutoff 0.25", "tag": "cutoff 0.25"}, {"v": 4.28, "label": "Flagged at cutoff 0.3", "tag": "cutoff 0.3"}, {"v": 1.29, "label": "Flagged at cutoff 0.4", "tag": "cutoff 0.4"}, {"v": 0.47, "label": "Flagged at cutoff 0.5", "tag": "cutoff 0.5"}, {"v": 0.13, "label": "Flagged at cutoff 0.626842", "tag": "cutoff 0.626842"}],
@@ -764,7 +766,7 @@ footer b { color: var(--ink); }
       fine: 'Selected EditLens setting; cutoffs 0.10 to 0.626842 on the document score. Raw share of complaints above each cutoff, no correction.', next: 'Calibrate with ScoreMix →' },
     { head: 'Santa Clara 2026 · validated setting, no cutoff', rl: '', pace: 0, band2: [34.4198075, 41.2480022],
       frames: [{ v: 37.7627806, label: 'ScoreMix, setting validated on PhantomDocket', tag: 'ScoreMix', cal: true }],
-      text: `<p>Our method, ScoreMix, drops the cutoff. Instead of counting complaints above a line, it compares the whole distribution of scores with two references: the court's complaints from before AI drafting tools were publicly available, and filings with known AI use from our dataset, PhantomDocket. It estimates what share of this year's complaints look like the second.</p><p>With the validated setting, that share is 37.8% of 2026 Santa Clara complaints, with a 95% interval of 34.4% to 41.2%.</p>`,
+      text: `<p>Our method, ScoreMix, drops the cutoff. Instead of counting complaints above a line, it compares the whole distribution of scores with two references: the court's complaints from before AI drafting tools were widely available, and filings with known AI use from our dataset, PhantomDocket. It estimates what share of this year's complaints look like the second.</p><p>With the validated setting, that share is 37.8% of 2026 Santa Clara complaints, with a 95% interval of 34.4% to 41.2%.</p>`,
       fine: '95% interval 34.4–41.2% from 1,000 bootstrap draws. Across the other 44 settings, ScoreMix stays between 29.0% and 46.9%, against 1.8% to 97.7% for the raw flags in step 1.', next: null },
   ];
   function drawGhosts(seen, done) {
